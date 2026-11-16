@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #14231c;
+  --paper: #f6f1e7;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -0.02em;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition active:scale-95 disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-emerald-800 text-amber-50 hover:bg-emerald-900;
+  }
+  .btn-accent {
+    @apply btn bg-amber-400 text-emerald-950 hover:bg-amber-300;
+  }
+  .btn-ghost {
+    @apply btn border-2 border-emerald-900/20 text-emerald-900 hover:border-emerald-900;
+  }
+  .input {
+    @apply w-full rounded-xl border-2 border-emerald-900/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-emerald-700;
+  }
+  .label {
+    @apply mb-1 block text-xs font-bold uppercase tracking-wider text-emerald-900/70;
+  }
+  .card {
+    @apply rounded-2xl border-2 border-emerald-950/10 bg-white;
+  }
+}
