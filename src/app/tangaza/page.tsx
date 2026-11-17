@@ -17,7 +17,7 @@ interface Plan {
 const PLANS: Plan[] = [
   {
     name: "Boost Tangazo",
-    price: "TSh 2,000",
+    price: "TSh 500",
     period: "kwa wiki",
     description:
       "Tangazo lako la bidhaa au huduma linaonyeshwa juu ya mengine yote sokoni.",
@@ -30,12 +30,12 @@ const PLANS: Plan[] = [
   },
   {
     name: "Bango la Kati",
-    price: "TSh 20,000",
+    price: "TSh 1,500",
     period: "kwa mwezi",
     description:
       "Bango la biashara yako linaonyeshwa katikati ya bidhaa na kwenye makala za blogu.",
     features: [
-      "Bango kubwa lenye picha yako",
+      "Bango kubwa lenye picha yako au bidhaa yako",
       "Link ya WhatsApp au Instagram",
       "Ripoti ya idadi ya mabonyezo",
     ],
@@ -43,10 +43,10 @@ const PLANS: Plan[] = [
   },
   {
     name: "Bango Kuu la Juu",
-    price: "TSh 35,000",
+    price: "TSh 2,000",
     period: "kwa mwezi",
     description:
-      "Nafasi bora kabisa: bango lako ndilo la kwanza kuonekana kila mwanachuo anapofungua tovuti.",
+      "Nafasi bora kabisa: bango lako ndilo la kwanza kuonekana kila mwanachuo na watumiaji anapofungua tovuti.",
     features: [
       "Nafasi ya juu kabisa ya ukurasa",
       "Linazunguka pamoja na mabango mengine ya juu",
@@ -62,7 +62,7 @@ const STEPS = [
   "Bonyeza kitufe cha WhatsApp ili kuwasiliana na Admin.",
   "Tuma picha ya bango (au maelezo ya tangazo) pamoja na link ya WhatsApp/Instagram ya biashara yako.",
   "Admin atakupa maelekezo ya malipo (M-Pesa, Tigo Pesa, Airtel Money au Halopesa).",
-  "Malipo yakithibitishwa, tangazo lako linawekwa hewani ndani ya saa chache.",
+  "Malipo yakithibitishwa, tangazo lako linawekwa hewani ndani ya nusu saa tu.",
 ];
 
 export default function TangazaPage() {
