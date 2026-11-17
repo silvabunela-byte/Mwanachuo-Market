@@ -5,7 +5,7 @@ export interface Listing {
   description: string;
   price: number;
   category: string;
-  condition: "Mpya" | "Imetumika" | string;
+  condition: "Mpya" | "Imetumika Kiasi" string;
   campus_location: string;
   seller_name: string;
   whatsapp_number: string;
@@ -54,7 +54,6 @@ export const CAMPUS_LOCATIONS = [
   "Main Campus",
   "Mazimbu",
   "Hosteli za Nje",
-  "Solomon Mahlangu",
 ] as const;
 
 export type CampusLocation = (typeof CAMPUS_LOCATIONS)[number];
