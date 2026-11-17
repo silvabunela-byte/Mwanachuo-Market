@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 export default function KuhusuSisiPage() {
   return (
     <main className="min-h-screen bg-[#F8FAFC] py-8 px-4">
