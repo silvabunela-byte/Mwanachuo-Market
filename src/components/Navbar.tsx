@@ -47,7 +47,8 @@ function SearchBox({
 const NAV_LINKS = [
   { href: "/", label: "Soko" },
   { href: "/blog", label: "Blogu" },
-  { href: "/kuhusu", label: "Kuhusu Sisi" }
+  { href: "/kuhusu", label: "Kuhusu Sisi" },
+  { href: "/mawasiliano", label: "Mawasiliano" }
 ] as const;
 
 export default function Navbar({
