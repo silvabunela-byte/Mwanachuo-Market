@@ -53,7 +53,7 @@ export const CAMPUS_LOCATIONS = [
   "Maeneo Yote",
   "Main Campus",
   "Mazimbu",
-  "Hosteli za Nje",
+  "Hosteli za Nje"
 ] as const;
 
 export type CampusLocation = (typeof CAMPUS_LOCATIONS)[number];
