@@ -1,18 +1,34 @@
+export type Category = 
+  | 'Zote'
+  | 'Vifaa vya Kielektroniki'
+  | 'Nguo & Viatu'
+  | 'Chakula & Vinywaji'
+  | 'Huduma & Ujuzi'
+  | 'Vyumba & Hosteli'
+  | 'Vitabu & Vifaa vya Shule';
+
+export type CampusLocation = 
+  | 'Maeneo Yote'
+  | 'Main Campus'
+  | 'Mazimbu'
+  | 'Hosteli za Nje'
+  | 'Solomon Mahlangu';
+
 export interface Listing {
   id: string;
   created_at: string;
   title: string;
   description: string;
   price: number;
-  category: string;
-  condition: "Mpya" | "Imetumika" | string;
-  campus_location: string;
+  category: Category;
+  condition: 'Mpya' | 'Imetumika';
+  campus_location: CampusLocation;
   seller_name: string;
   whatsapp_number: string;
-  image_urls: string[] | null;
-  is_sponsored: boolean;
-  is_verified: boolean;
-  status: string;
+  image_urls: string[];
+  is_sponsored?: boolean;
+  is_verified?: boolean;
+  status: 'approved' | 'pending';
 }
 
 export interface LocalAd {
@@ -21,7 +37,7 @@ export interface LocalAd {
   business_name: string;
   banner_url: string;
   target_url: string;
-  placement: "top_banner" | "feed_banner" | string;
+  placement: 'top_banner' | 'feed_banner';
   is_active: boolean;
   clicks_count: number;
 }
@@ -31,30 +47,8 @@ export interface BlogPost {
   created_at: string;
   title: string;
   slug: string;
-  excerpt: string | null;
+  excerpt: string;
   content: string;
-  cover_image: string | null;
-  category: string | null;
+  cover_image?: string;
+  category: string;
 }
-
-export const CATEGORIES = [
-  "Zote",
-  "Vifaa vya Kielektroniki",
-  "Nguo & Viatu",
-  "Chakula & Vinywaji",
-  "Huduma & Ujuzi",
-  "Vyumba & Hosteli",
-  "Vitabu & Vifaa vya Shule",
-] as const;
-
-export type Category = (typeof CATEGORIES)[number];
-
-export const CAMPUS_LOCATIONS = [
-  "Maeneo Yote",
-  "Main Campus",
-  "Mazimbu",
-  "Hosteli za Nje",
-  "Solomon Mahlangu",
-] as const;
-
-export type CampusLocation = (typeof CAMPUS_LOCATIONS)[number];
