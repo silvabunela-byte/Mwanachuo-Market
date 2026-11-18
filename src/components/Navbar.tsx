@@ -61,7 +61,8 @@ const NAV_LINKS = [
   { href: "/blog", label: "Blogu" },
   { href: "/kuhusu", label: "Kuhusu Sisi" },
   { href: "/mawasiliano", label: "Mawasiliano" },
-  { href: "/habari", label: "Habari" }
+  { href: "/habari", label: "Habari" },
+  { href: "/uwekezaji", label: "Fedha" }
 ] as const;
 
 export default function Navbar({
