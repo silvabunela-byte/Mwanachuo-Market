@@ -84,12 +84,13 @@ export default function TangazaPage() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
-          {PLANS.map((plan) => {
+                    {PLANS.map((plan, i) => {
             const Icon = plan.icon;
             return (
               <div
                 key={plan.name}
-                className={`flex flex-col rounded-2xl border bg-white p-5 shadow-sm ${
+                style={{ animationDelay: `${i * 150}ms` }}
+                className={`animate-fade-up group flex flex-col rounded-2xl border bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl ${
                   plan.highlight
                     ? "border-[#F97316] ring-2 ring-orange-100"
                     : "border-slate-200"
@@ -102,7 +103,7 @@ export default function TangazaPage() {
                       : "bg-emerald-50 text-[#059669]"
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                                   <Icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-6" />
                 </span>
                 <h2 className="mt-3 text-lg font-extrabold text-slate-900">
                   {plan.name}
@@ -147,7 +148,10 @@ export default function TangazaPage() {
           })}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <section
+          style={{ animationDelay: "450ms" }}
+          className="animate-fade-up rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+        >
           <h2 className="text-lg font-extrabold text-slate-900">
             Jinsi ya kulipia na kuweka tangazo
           </h2>
