@@ -111,9 +111,13 @@ export default function KuhusuSisiPage() {
               Tunachokifanya
             </h2>
             <div className="grid gap-4 sm:grid-cols-3">
-              {FEATURES.map(({ icon: Icon, title, text }) => (
-                <div key={title} className="rounded-lg bg-emerald-50 p-4">
-                  <Icon className="mb-2 h-6 w-6 text-[#059669]" />
+                            {FEATURES.map(({ icon: Icon, title, text }, i) => (
+                <div
+                  key={title}
+                  style={{ animationDelay: `${i * 150}ms` }}
+                  className="animate-fade-up group rounded-lg bg-emerald-50 p-4 transition duration-300 hover:-translate-y-2 hover:bg-emerald-100 hover:shadow-lg"
+                >
+                  <Icon className="mb-2 h-6 w-6 text-[#059669] transition-transform duration-300 group-hover:scale-125 group-hover:rotate-6" />
                   <h3 className="mb-1 font-semibold text-[#0F172A]">{title}</h3>
                   <p className="text-sm text-gray-600">{text}</p>
                 </div>
