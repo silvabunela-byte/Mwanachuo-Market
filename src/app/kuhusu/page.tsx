@@ -14,7 +14,7 @@ import {
   Sprout,  
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import Reveal from "@/components/Reveal";
+
 import { adminWhatsAppLink } from "@/lib/config";
 
 const FEATURES = [
@@ -80,7 +80,10 @@ export default function KuhusuSisiPage() {
       <Navbar />
       <main className="min-h-screen bg-[#F8FAFC] px-4 py-8">
         <div className="mx-auto max-w-3xl space-y-6">
-          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
+          <section
+  style={{ animationDelay: "0ms" }}
+  className="animate-fade-up rounded-xl bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
             <h1 className="mb-4 text-2xl font-bold text-[#0F172A]">
               Kuhusu Mwanachuo Market
             </h1>
@@ -93,9 +96,12 @@ export default function KuhusuSisiPage() {
               Wanachuo wanaweza kuuza, kununua, kutangaza ujuzi, na kutafuta
               hosteli kupitia mtandao wetu kwa urahisi kabisa.
             </p>
-          </Reveal>
+          </section>
 
-          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
+          <section
+  style={{ animationDelay: "150ms" }}
+  className="animate-fade-up rounded-xl bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
             <div className="mb-3 flex items-center gap-2">
               <Target className="h-5 w-5 text-[#059669]" />
               <h2 className="text-xl font-bold text-[#0F172A]">Dhamira Yetu</h2>
@@ -105,9 +111,12 @@ export default function KuhusuSisiPage() {
               na chuo chake, na kuwapa wanafunzi wajasiriamali jukwaa la
               kukuza biashara zao bila gharama kubwa.
             </p>
-          </Reveal>
+          </section>
 
-          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
+          <section
+  style={{ animationDelay: "0ms" }}
+  className="animate-fade-up rounded-xl bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
             <h2 className="mb-4 text-xl font-bold text-[#0F172A]">
               Tunachokifanya
             </h2>
@@ -124,9 +133,12 @@ export default function KuhusuSisiPage() {
                 </div>
               ))}
             </div>
-          </Reveal>
+          </section>
 
-          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
+<section
+  style={{ animationDelay: "300ms" }}
+  className="animate-fade-up rounded-xl bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
             <h2 className="mb-4 text-xl font-bold text-[#0F172A]">
               Jinsi Inavyofanya Kazi
             </h2>
@@ -140,9 +152,12 @@ export default function KuhusuSisiPage() {
                 </li>
               ))}
             </ol>
-          </Reveal>
+          </section>
 
-          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
+          <section
+  style={{ animationDelay: "450ms" }}
+  className="animate-fade-up rounded-xl bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
             <div className="mb-3 flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-[#059669]" />
               <h2 className="text-xl font-bold text-[#0F172A]">
@@ -154,9 +169,12 @@ export default function KuhusuSisiPage() {
                 <li key={tip}>{tip}</li>
               ))}
             </ul>
-          </Reveal>
+          </section>
 
-          <Reveal className="rounded-xl bg-[#059669] p-6 text-white shadow-sm">
+          <section
+  style={{ animationDelay: "0ms" }}
+  className="animate-fade-up rounded-xl bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
             <h2 className="mb-2 text-xl font-bold">Wasiliana Nasi</h2>
             <p className="mb-4 text-emerald-50">
               Una swali, maoni au unataka kutangaza biashara yako? Tuandikie
@@ -171,7 +189,7 @@ export default function KuhusuSisiPage() {
               <MessageCircle className="h-4 w-4" />
               Wasiliana kwa WhatsApp
             </a>
-          </Reveal>
+          </section>
         </div>
       </main>
     </>
