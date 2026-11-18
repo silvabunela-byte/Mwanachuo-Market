@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, Megaphone, Search, X } from "lucide-react";
+import { GraduationCap, Megaphone, Search, ShoppingBag, X } from "lucide-react";
 
 interface NavbarProps {
   /** Kama hazijawekwa, kisanduku cha kutafuta hakionyeshwi. */
@@ -83,8 +83,11 @@ export default function Navbar({
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#059669] text-white">
-            <GraduationCap className="h-5 w-5" />
+                    <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-[#059669] text-white">
+            <ShoppingBag className="h-5 w-5" />
+            <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 ring-2 ring-white">
+              <GraduationCap className="h-3 w-3 text-white" />
+            </span>
           </span>
           <span className="text-lg font-extrabold tracking-tight text-slate-900">
             Mwanachuo <span className="text-[#059669]">Market</span>
