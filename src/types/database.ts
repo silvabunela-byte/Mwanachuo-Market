@@ -58,3 +58,11 @@ export const CAMPUS_LOCATIONS = [
 ] as const;
 
 export type CampusLocation = (typeof CAMPUS_LOCATIONS)[number];
+
+export interface NewsItem {
+  id: string;
+  created_at: string;
+  title: string;
+  body: string;
+  is_new: boolean;
+}
