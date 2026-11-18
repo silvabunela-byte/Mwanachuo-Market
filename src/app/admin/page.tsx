@@ -9,6 +9,7 @@ import {
   Loader2,
   Lock,
   LogOut,
+  Pencil,
   Star,
   Trash2,
 } from "lucide-react";
@@ -673,6 +674,11 @@ function NewsTab() {
   const [markNew, setMarkNew] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -743,6 +749,45 @@ function NewsTab() {
     setItems((prev) => prev.filter((n) => n.id !== item.id));
   };
 
+  const startEdit = (item: NewsItem) => {
+    setNotice(null);
+    setEditingId(item.id);
+    setEditTitle(item.title);
+    setEditBody(item.body);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditTitle("");
+    setEditBody("");
+  };
+
+  const saveEdit = async (item: NewsItem) => {
+    setNotice(null);
+    if (editTitle.trim().length < 3)
+      return setNotice({ type: "err", text: "Weka kichwa cha habari." });
+    if (editBody.trim().length < 5)
+      return setNotice({ type: "err", text: "Andika maelezo ya habari." });
+
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from("news")
+      .update({ title: editTitle.trim(), body: editBody.trim() })
+      .eq("id", item.id);
+    setSavingEdit(false);
+
+    if (error) return setNotice({ type: "err", text: error.message });
+    setItems((prev) =>
+      prev.map((n) =>
+        n.id === item.id
+          ? { ...n, title: editTitle.trim(), body: editBody.trim() }
+          : n
+      )
+    );
+    cancelEdit();
+    setNotice({ type: "ok", text: "Habari imehifadhiwa." });
+  };
+
   const newCount = items.filter((n) => n.is_new).length;
 
   return (
@@ -808,7 +853,48 @@ function NewsTab() {
           Bado hakuna habari. Chapisha ya kwanza hapo juu.
         </p>
       ) : (
-        items.map((n) => (
+        items.map((n) =>
+          editingId === n.id ? (
+            <div
+              key={n.id}
+              className="space-y-3 rounded-2xl border border-emerald-300 bg-white p-4 shadow-sm"
+            >
+              <h3 className="text-base font-extrabold text-slate-900">
+                Hariri Habari
+              </h3>
+              <input
+                className={inputClass}
+                placeholder="Kichwa cha habari"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+              <textarea
+                className={`${inputClass} min-h-[120px]`}
+                placeholder="Maelezo ya habari"
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+              />
+              <Notice notice={notice} />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => saveEdit(n)}
+                  disabled={savingEdit}
+                  className={primaryBtn}
+                >
+                  {savingEdit ? "Inahifadhi..." : "Hifadhi"}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  disabled={savingEdit}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                >
+                  Ghairi
+                </button>
+              </div>
+            </div>
+          ) : (
           <div
             key={n.id}
             className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
@@ -824,7 +910,15 @@ function NewsTab() {
               </h3>
               <p className="text-xs text-slate-500">{formatDate(n.created_at)}</p>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => startEdit(n)}
+                className="flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Hariri
+              </button>
               <button
                 type="button"
                 onClick={() => setNewFlag(n, !n.is_new)}
@@ -846,7 +940,8 @@ function NewsTab() {
               </button>
             </div>
           </div>
-        ))
+          )
+        )
       )}
     </div>
   );
