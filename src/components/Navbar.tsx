@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GraduationCap, Megaphone, Search, ShoppingBag, X } from "lucide-react";
+import { hasNewNews } from "@/lib/news";
 
 interface NavbarProps {
   /** Kama hazijawekwa, kisanduku cha kutafuta hakionyeshwi. */
@@ -44,11 +45,23 @@ function SearchBox({
   );
 }
 
+function NewDot() {
+  return (
+    <span
+      className="relative ml-1.5 inline-flex h-2.5 w-2.5 align-middle"
+      aria-label="Kuna habari mpya"
+    >
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+    </span>
+  );
+}
 const NAV_LINKS = [
   { href: "/", label: "Soko" },
   { href: "/blog", label: "Blogu" },
   { href: "/kuhusu", label: "Kuhusu Sisi" },
-  { href: "/mawasiliano", label: "Mawasiliano" }
+  { href: "/mawasiliano", label: "Mawasiliano" },
+  { href: "/habari", label: "Habari" }
 ] as const;
 
 export default function Navbar({
@@ -57,6 +70,17 @@ export default function Navbar({
   onOpenPostModal,
 }: NavbarProps) {
   const pathname = usePathname();
+  const [hasNew, setHasNew] = useState(false);
+
+useEffect(() => {
+  let cancelled = false;
+  hasNewNews().then((v) => {
+    if (!cancelled) setHasNew(v);
+  });
+  return () => {
+    cancelled = true;
+  };
+}, []);
   const showSearch = onSearchChange !== undefined;
 
   const isActive = (href: string) =>
@@ -109,6 +133,7 @@ export default function Navbar({
           {NAV_LINKS.map((l) => (
             <Link key={l.href} href={l.href} className={linkClass(isActive(l.href))}>
               {l.label}
+              {l.href === "/habari" && hasNew && <NewDot />}
             </Link>
           ))}
         </nav>
@@ -150,6 +175,7 @@ export default function Navbar({
         {NAV_LINKS.map((l) => (
           <Link key={l.href} href={l.href} className={linkClass(isActive(l.href))}>
             {l.label}
+            {l.href === "/habari" && hasNew && <NewDot />}
           </Link>
         ))}
         <Link
