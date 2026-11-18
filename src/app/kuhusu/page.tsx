@@ -5,6 +5,13 @@ import {
   ShoppingBag,
   Target,
   Users,
+  Home,
+  Utensils,
+  BookOpen,
+  Truck,
+  Newspaper,
+  TrendingUp,
+  Sprout,  
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { adminWhatsAppLink } from "@/lib/config";
