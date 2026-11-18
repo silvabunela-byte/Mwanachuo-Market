@@ -14,6 +14,7 @@ import {
   Sprout,  
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Reveal from "@/components/Reveal";
 import { adminWhatsAppLink } from "@/lib/config";
 
 const FEATURES = [
