@@ -11,19 +11,44 @@ import { adminWhatsAppLink } from "@/lib/config";
 
 const FEATURES = [
   {
-    icon: ShoppingBag,
-    title: "Nunua & Uza",
-    text: "Vifaa vya kielektroniki, nguo, vitabu, chakula na zaidi kutoka kwa wanachuo wenzako.",
-  },
-  {
-    icon: Users,
-    title: "Huduma & Ujuzi",
-    text: "Tangaza ujuzi wako: kusafisha, kusuka, kufundisha, ubunifu na mengineyo.",
-  },
-  {
-    icon: BadgeCheck,
+    icon: Home,
     title: "Vyumba & Hosteli",
-    text: "Tafuta chumba au hosteli karibu na chuo chako kwa bei unayoimudu.",
+    text: "Tafuta chumba au hosteli karibu na chuo chako kwa bei unayoimudu."
+  },
+  {
+    icon: ShoppingBag,
+    title: "Soko la Bidhaa",
+    text: "Nunua na uuze simu, laptop, nguo na vifaa mbalimbali vya wanachuo."
+  },
+  {
+    icon: Utensils,
+    title: "Vyakula & Huduma",
+    text: "Pata chakula kizuri na huduma za upishi zinazofikishwa karibu nawe."
+  },
+  {
+    icon: BookOpen,
+    title: "Stationery & Notes",
+    text: "Huduma za kuchapa (printing), photocopying, na vifaa vya kimasomo."
+  },
+  {
+    icon: Truck,
+    title: "Usafirishaji wa Haraka",
+    text: "Miamala na usafirishaji wa bidhaa mpaka mlangoni pako chuoni."
+  },
+  {
+    icon: Newspaper,
+    title: "Blog & Makala za Kuelimisha",
+    text: "Pata taarifa, makala za maisha ya chuo, na ushauri wa kimaisha na kimasomo."
+  },
+  {
+    icon: TrendingUp,
+    title: "Uwekezaji & Hisa kwa Vijana",
+    text: "Jifunze na pata mwongozo wa kuanza kuwekeza kwenye hisa, hati fungani, na biashara ndogo."
+  },
+  {
+    icon: Sprout,
+    title: "Fursa za Kilimo Biashara",
+    text: "Gundua fursa za kilimo cha kisasa na biashara za mazao zinazofaa kwa mitaji ya kituo cha chuo."
   },
 ] as const;
 
