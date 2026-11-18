@@ -80,7 +80,7 @@ export default function KuhusuSisiPage() {
       <Navbar />
       <main className="min-h-screen bg-[#F8FAFC] px-4 py-8">
         <div className="mx-auto max-w-3xl space-y-6">
-          <section className="rounded-xl bg-white p-6 shadow-sm">
+          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
             <h1 className="mb-4 text-2xl font-bold text-[#0F172A]">
               Kuhusu Mwanachuo Market
             </h1>
@@ -93,9 +93,9 @@ export default function KuhusuSisiPage() {
               Wanachuo wanaweza kuuza, kununua, kutangaza ujuzi, na kutafuta
               hosteli kupitia mtandao wetu kwa urahisi kabisa.
             </p>
-          </section>
+          </Reveal>
 
-          <section className="rounded-xl bg-white p-6 shadow-sm">
+          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-center gap-2">
               <Target className="h-5 w-5 text-[#059669]" />
               <h2 className="text-xl font-bold text-[#0F172A]">Dhamira Yetu</h2>
@@ -105,9 +105,9 @@ export default function KuhusuSisiPage() {
               na chuo chake, na kuwapa wanafunzi wajasiriamali jukwaa la
               kukuza biashara zao bila gharama kubwa.
             </p>
-          </section>
+          </Reveal>
 
-          <section className="rounded-xl bg-white p-6 shadow-sm">
+          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-[#0F172A]">
               Tunachokifanya
             </h2>
@@ -124,9 +124,9 @@ export default function KuhusuSisiPage() {
                 </div>
               ))}
             </div>
-          </section>
+          </Reveal>
 
-          <section className="rounded-xl bg-white p-6 shadow-sm">
+          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-[#0F172A]">
               Jinsi Inavyofanya Kazi
             </h2>
@@ -140,9 +140,9 @@ export default function KuhusuSisiPage() {
                 </li>
               ))}
             </ol>
-          </section>
+          </Reveal>
 
-          <section className="rounded-xl bg-white p-6 shadow-sm">
+          <Reveal className="rounded-xl bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-[#059669]" />
               <h2 className="text-xl font-bold text-[#0F172A]">
@@ -154,9 +154,9 @@ export default function KuhusuSisiPage() {
                 <li key={tip}>{tip}</li>
               ))}
             </ul>
-          </section>
+          </Reveal>
 
-          <section className="rounded-xl bg-[#059669] p-6 text-white shadow-sm">
+          <Reveal className="rounded-xl bg-[#059669] p-6 text-white shadow-sm">
             <h2 className="mb-2 text-xl font-bold">Wasiliana Nasi</h2>
             <p className="mb-4 text-emerald-50">
               Una swali, maoni au unataka kutangaza biashara yako? Tuandikie
@@ -171,7 +171,7 @@ export default function KuhusuSisiPage() {
               <MessageCircle className="h-4 w-4" />
               Wasiliana kwa WhatsApp
             </a>
-          </section>
+          </Reveal>
         </div>
       </main>
     </>
