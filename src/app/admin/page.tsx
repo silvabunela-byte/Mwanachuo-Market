@@ -16,9 +16,9 @@ import { supabase } from "@/lib/supabase";
 import { ADMIN_PIN } from "@/lib/config";
 import { uploadImage } from "@/lib/storage";
 import { BROKEN_IMAGE, formatDate, formatPrice, slugify } from "@/lib/utils";
-import type { BlogPost, Listing, LocalAd } from "@/types/database";
+import type { BlogPost, Listing, LocalAd, NewsItem } from "@/types/database";
 
-type Tab = "bidhaa" | "ads" | "blogu";
+type Tab = "bidhaa" | "ads" | "blogu" | "habari";
 type ListingFilter = "pending" | "approved" | "all";
 
 const SESSION_KEY = "mm_admin_ok";
@@ -660,6 +660,198 @@ function BlogsTab() {
   );
 }
 
+/* =========================== HABARI =========================== */
+function NewsTab() {
+  const [items, setItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState<{ type: "ok" | "err"; text: string } | null>(
+    null
+  );
+
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [markNew, setMarkNew] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("news")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) setNotice({ type: "err", text: error.message });
+    else setItems((data ?? []) as NewsItem[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handlePublish = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setNotice(null);
+    if (title.trim().length < 3)
+      return setNotice({ type: "err", text: "Weka kichwa cha habari." });
+    if (body.trim().length < 5)
+      return setNotice({ type: "err", text: "Andika maelezo ya habari." });
+
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("news")
+      .insert({ title: title.trim(), body: body.trim(), is_new: markNew })
+      .select()
+      .single();
+    setSaving(false);
+
+    if (error) return setNotice({ type: "err", text: error.message });
+    setItems((prev) => [data as NewsItem, ...prev]);
+    setTitle("");
+    setBody("");
+    setMarkNew(true);
+    setNotice({ type: "ok", text: "Habari imechapishwa." });
+  };
+
+  const setNewFlag = async (item: NewsItem, value: boolean) => {
+    setNotice(null);
+    const { error } = await supabase
+      .from("news")
+      .update({ is_new: value })
+      .eq("id", item.id);
+    if (error) return setNotice({ type: "err", text: error.message });
+    setItems((prev) =>
+      prev.map((n) => (n.id === item.id ? { ...n, is_new: value } : n))
+    );
+  };
+
+  const clearAllNew = async () => {
+    if (!window.confirm("Ondoa alama ya MPYA kwenye habari zote?")) return;
+    setNotice(null);
+    const { error } = await supabase
+      .from("news")
+      .update({ is_new: false })
+      .eq("is_new", true);
+    if (error) return setNotice({ type: "err", text: error.message });
+    setItems((prev) => prev.map((n) => ({ ...n, is_new: false })));
+    setNotice({ type: "ok", text: "Alama ya MPYA imeondolewa kwa zote." });
+  };
+
+  const remove = async (item: NewsItem) => {
+    if (!window.confirm(`Futa habari "${item.title}"?`)) return;
+    const { error } = await supabase.from("news").delete().eq("id", item.id);
+    if (error) return setNotice({ type: "err", text: error.message });
+    setItems((prev) => prev.filter((n) => n.id !== item.id));
+  };
+
+  const newCount = items.filter((n) => n.is_new).length;
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-base font-extrabold text-slate-900">
+          Weka Habari Mpya
+        </h3>
+        <input
+          className={inputClass}
+          placeholder="Kichwa cha habari"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <textarea
+          className={`${inputClass} min-h-[120px]`}
+          placeholder="Maelezo ya habari"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+        />
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <input
+            type="checkbox"
+            checked={markNew}
+            onChange={(e) => setMarkNew(e.target.checked)}
+            className="h-4 w-4 accent-[#059669]"
+          />
+          Weka alama ya MPYA (taa inayowaka kwenye menyu)
+        </label>
+        <Notice notice={notice} />
+        <button
+          type="button"
+          onClick={handlePublish}
+          disabled={saving}
+          className={primaryBtn}
+        >
+          {saving ? "Inachapisha..." : "Chapisha Habari"}
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-slate-600">
+          Habari zenye alama ya MPYA:{" "}
+          <span className="font-extrabold text-amber-600">{newCount}</span>
+        </p>
+        {newCount > 0 && (
+          <button
+            type="button"
+            onClick={clearAllNew}
+            className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-bold text-amber-700 hover:bg-amber-50"
+          >
+            Ondoa MPYA kwa zote
+          </button>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-7 w-7 animate-spin text-[#059669]" />
+        </div>
+      ) : items.length === 0 ? (
+        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
+          Bado hakuna habari. Chapisha ya kwanza hapo juu.
+        </p>
+      ) : (
+        items.map((n) => (
+          <div
+            key={n.id}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+          >
+            <div className="min-w-0">
+              <h3 className="flex items-center gap-2 truncate text-sm font-bold text-slate-900">
+                {n.title}
+                {n.is_new && (
+                  <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase text-amber-700">
+                    Mpya
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-500">{formatDate(n.created_at)}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setNewFlag(n, !n.is_new)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${
+                  n.is_new
+                    ? "border-amber-300 text-amber-700 hover:bg-amber-50"
+                    : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                }`}
+              >
+                {n.is_new ? "Ondoa MPYA" : "Weka MPYA"}
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(n)}
+                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Futa
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
 /* =========================== ADMIN =========================== */
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -789,6 +981,7 @@ export default function AdminPage() {
               ["bidhaa", "Bidhaa"],
               ["ads", "Local Ads"],
               ["blogu", "Blogu"],
+              ["habari", "Habari"],
             ] as [Tab, string][]
           ).map(([key, label]) => (
             <button
@@ -811,6 +1004,7 @@ export default function AdminPage() {
         {tab === "bidhaa" && <ListingsTab />}
         {tab === "ads" && <AdsTab />}
         {tab === "blogu" && <BlogsTab />}
+        {tab === "habari" && <NewsTab />}
       </main>
     </div>
   );
