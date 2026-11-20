@@ -62,13 +62,14 @@ function PostAdForm({
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [wantsSponsored, setWantsSponsored] = useState(false);
-
+  const [pin, setPin] = useState("");
+  const [pinConfirm, setPinConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [postedTitle, setPostedTitle] = useState("");
   const [postedSponsored, setPostedSponsored] = useState(false);
-
+  const [postedPin, setPostedPin] = useState("");
   const previews = useMemo(
     () => files.map((f) => URL.createObjectURL(f)),
     [files]
@@ -116,7 +117,9 @@ function PostAdForm({
       );
     if (description.trim().length < 10)
       return setError("Andika maelezo mafupi ya angalau herufi 10.");
-
+    if (!/^\d{4}$/.test(pin)) return setError("PIN lazima iwe tarakimu 4.");
+    if (pin !== pinConfirm)
+      return setError("PIN mbili hazifanani. Ziandike tena kwa makini.");
     setSubmitting(true);
     try {
       const urls: string[] = [];
@@ -124,24 +127,23 @@ function PostAdForm({
         urls.push(await uploadImage(file, "listings"));
       }
 
-      const { error: insertError } = await supabase.from("listings").insert({
-        title: title.trim(),
-        description: description.trim(),
-        price: priceNumber,
-        category,
-        condition,
-        campus_location: campus,
-        seller_name: sellerName.trim(),
-        whatsapp_number: normalizedPhone,
-        image_urls: urls,
-        is_sponsored: false,
-        is_verified: false,
-        status: "pending",
+          const { error: insertError } = await supabase.rpc("create_listing", {
+        p_title: title.trim(),
+        p_description: description.trim(),
+        p_price: priceNumber,
+        p_category: category,
+        p_condition: condition,
+        p_campus: campus,
+        p_seller: sellerName.trim(),
+        p_phone: normalizedPhone,
+        p_images: urls,
+        p_pin: pin,
       });
       if (insertError) throw new Error(insertError.message);
 
       setPostedTitle(title.trim());
       setPostedSponsored(wantsSponsored);
+      setPostedPin(pin);
       setDone(true);
       onPosted?.();
     } catch (err) {
@@ -192,6 +194,19 @@ function PostAdForm({
               Litaonekana sokoni baada ya Afisa Masoko kulipitisha. Kwa kawaida
               hutokea ndani ya saa chache.
             </p>
+                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left">
+              <p className="text-sm font-bold text-emerald-800">
+                PIN yako ya siri
+              </p>
+              <p className="mt-1 text-center text-3xl font-extrabold tracking-[0.4em] text-emerald-700">
+                {postedPin}
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                Ihifadhi mahali salama (piga picha skrini au iandike). Kuhariri
+                au kufuta tangazo lako, bonyeza <b>Tangazo Langu</b> kwenye
+                menyu, kisha tumia namba yako ya WhatsApp na PIN hii.
+              </p>
+            </div>
             {postedSponsored && (
               <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-left">
                 <p className="text-sm font-bold text-orange-700">
@@ -368,6 +383,44 @@ function PostAdForm({
                 </p>
               </div>
 
+                            <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-sm text-slate-600">
+                  Chagua <b>PIN ya siri ya tarakimu 4</b>. Utaitumia pamoja na
+                  namba yako ya WhatsApp kuhariri au kufuta tangazo lako baadaye.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="PIN (tarakimu 4)">
+                    <input
+                      className={inputClass}
+                      type="password"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      maxLength={4}
+                      value={pin}
+                      onChange={(e) =>
+                        setPin(e.target.value.replace(/\D/g, "").slice(0, 4))
+                      }
+                      placeholder="••••"
+                    />
+                  </Field>
+                  <Field label="Thibitisha PIN">
+                    <input
+                      className={inputClass}
+                      type="password"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      maxLength={4}
+                      value={pinConfirm}
+                      onChange={(e) =>
+                        setPinConfirm(
+                          e.target.value.replace(/\D/g, "").slice(0, 4)
+                        )
+                      }
+                      placeholder="••••"
+                    />
+                  </Field>
+                </div>
+              </div>
               <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-orange-200 bg-orange-50 p-3">
                 <input
                   type="checkbox"
