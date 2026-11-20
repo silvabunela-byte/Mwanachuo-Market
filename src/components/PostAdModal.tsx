@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabase";
 import { adminWhatsAppLink } from "@/lib/config";
 import { uploadImage } from "@/lib/storage";
 import { normalizePhone } from "@/lib/utils";
+import { welcomeMessage } from "@/lib/listingMessages";
 import { CAMPUS_LOCATIONS, CATEGORIES } from "@/types/database";
 
 interface PostAdModalProps {
@@ -70,6 +71,7 @@ function PostAdForm({
   const [postedTitle, setPostedTitle] = useState("");
   const [postedSponsored, setPostedSponsored] = useState(false);
   const [postedPin, setPostedPin] = useState("");
+  const [postedSeller, setPostedSeller] = useState("");
   const previews = useMemo(
     () => files.map((f) => URL.createObjectURL(f)),
     [files]
@@ -144,6 +146,7 @@ function PostAdForm({
       setPostedTitle(title.trim());
       setPostedSponsored(wantsSponsored);
       setPostedPin(pin);
+      setPostedSeller(sellerName.trim());
       setDone(true);
       onPosted?.();
     } catch (err) {
@@ -189,6 +192,9 @@ function PostAdForm({
             <CheckCircle2 className="mx-auto h-14 w-14 text-[#059669]" />
             <p className="text-base font-bold text-slate-900">
               Asante! Tangazo lako limepokelewa.
+            </p>
+                        <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+              {welcomeMessage(postedSeller)}
             </p>
             <p className="text-sm text-slate-500">
               Litaonekana sokoni baada ya Afisa Masoko kulipitisha. Kwa kawaida
