@@ -183,7 +183,7 @@ function PostAdForm({
         </div>
 
         {done ? (
-                 <div className="space-y-4 overflow-y-auto p-5 text-center">
+          <div className="space-y-4 overflow-y-auto p-5 text-center">
             <CheckCircle2 className="mx-auto h-14 w-14 text-[#059669]" />
             <p className="text-base font-bold text-slate-900">
               Asante! Tangazo lako limepokelewa.
@@ -255,22 +255,11 @@ function PostAdForm({
                     className={inputClass}
                     value={condition}
                     onChange={(e) =>
-                     setCondition(e.target.value as "Mpya" | "Imetumika" | "Hai" | "Mbichi" | "Kilichopikwa" | "Imekaushwa" | "Imeiva" | "Imesagwa" | "Imekaangwa" | "Fresh" | "Mgando"|)
+                      setCondition(e.target.value as "Mpya" | "Imetumika")
                     }
                   >
                     <option value="Mpya">Mpya</option>
                     <option value="Imetumika">Imetumika</option>
-                    <option value="Hai">Hai</option>
-                    <option value="Mbichi">Mbichi</option>
-                    <option value="Kilichopikwa">Kilichopikwa</option>
-                    <option value="Imekaushwa">Imekaushwa</option>
-                    <option value="Imeiva">Imeiva</option>
-                    <option value="Imesagwa">Imesagwa</option>
-                    <option value="Imekaangwa">Imekaangwa</option>
-                    <option value="Fresh">Fresh</option>
-                    <option value="Mgando">Mgando</option> 
-
-                    
                   </select>
                 </Field>
               </div>
@@ -387,7 +376,7 @@ function PostAdForm({
                   className="mt-0.5 h-4 w-4 accent-orange-500"
                 />
                 <span className="text-sm font-medium text-slate-900">
-                  Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/Mwezi)
+                  Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/wiki)
                 </span>
               </label>
 
