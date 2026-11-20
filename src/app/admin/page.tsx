@@ -383,6 +383,243 @@ function ListingsTab() {
     </div>
   );
 }
+/* =========================== LOCAL ADS =========================== */
+function AdsTab() {
+  const [ads, setAds] = useState<LocalAd[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState<{ type: "ok" | "err"; text: string } | null>(
+    null
+  );
+
+  const [businessName, setBusinessName] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [targetUrl, setTargetUrl] = useState("");
+  const [placement, setPlacement] = useState<"top_banner" | "feed_banner">(
+    "top_banner"
+  );
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("local_ads")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) setNotice({ type: "err", text: error.message });
+    else setAds((data ?? []) as LocalAd[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleCreate = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setNotice(null);
+    if (businessName.trim().length < 2)
+      return setNotice({ type: "err", text: "Weka jina la biashara." });
+    if (!/^https?:\/\//i.test(targetUrl.trim()))
+      return setNotice({
+        type: "err",
+        text: "Target URL lazima ianze na https:// (mfano link ya WhatsApp au Instagram).",
+      });
+    if (!bannerFile && !/^https?:\/\//i.test(bannerUrl.trim()))
+      return setNotice({
+        type: "err",
+        text: "Pakia picha ya bango au weka link ya picha.",
+      });
+
+    setSaving(true);
+    try {
+      const finalBanner = bannerFile
+        ? await uploadImage(bannerFile, "ads")
+        : bannerUrl.trim();
+      const { data, error } = await supabase
+        .from("local_ads")
+        .insert({
+          business_name: businessName.trim(),
+          banner_url: finalBanner,
+          target_url: targetUrl.trim(),
+          placement,
+          is_active: true,
+          clicks_count: 0,
+        })
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      setAds((prev) => [data as LocalAd, ...prev]);
+      setBusinessName("");
+      setBannerUrl("");
+      setBannerFile(null);
+      setTargetUrl("");
+      setNotice({ type: "ok", text: "Bango limeongezwa." });
+    } catch (err) {
+      setNotice({
+        type: "err",
+        text: err instanceof Error ? err.message : "Imeshindwa kuongeza bango.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleActive = async (ad: LocalAd) => {
+    const { error } = await supabase
+      .from("local_ads")
+      .update({ is_active: !ad.is_active })
+      .eq("id", ad.id);
+    if (error) return setNotice({ type: "err", text: error.message });
+    setAds((prev) =>
+      prev.map((a) => (a.id === ad.id ? { ...a, is_active: !a.is_active } : a))
+    );
+  };
+
+  const remove = async (ad: LocalAd) => {
+    if (!window.confirm(`Futa bango la "${ad.business_name}"?`)) return;
+    const { error } = await supabase.from("local_ads").delete().eq("id", ad.id);
+    if (error) return setNotice({ type: "err", text: error.message });
+    setAds((prev) => prev.filter((a) => a.id !== ad.id));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-base font-extrabold text-slate-900">
+          Ongeza Bango Jipya
+        </h3>
+        <input
+          className={inputClass}
+          placeholder="Jina la biashara (mfano: Mama Lishe Express & Biriani)"
+          value={businessName}
+          onChange={(e) => setBusinessName(e.target.value)}
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-600">
+              Pakia picha ya bango
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setBannerFile(e.target.files?.[0] ?? null)}
+              className="w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-emerald-700"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-600">
+              AU weka link ya picha
+            </label>
+            <input
+              className={inputClass}
+              placeholder="https://..."
+              value={bannerUrl}
+              onChange={(e) => setBannerUrl(e.target.value)}
+              disabled={bannerFile !== null}
+            />
+          </div>
+        </div>
+        <input
+          className={inputClass}
+          placeholder="Target URL (https://wa.me/255... au Instagram)"
+          value={targetUrl}
+          onChange={(e) => setTargetUrl(e.target.value)}
+        />
+        <select
+          className={inputClass}
+          value={placement}
+          onChange={(e) =>
+            setPlacement(e.target.value as "top_banner" | "feed_banner")
+          }
+        >
+          <option value="top_banner">Bango Kuu la Juu (top_banner)</option>
+          <option value="feed_banner">Bango la Kati (feed_banner)</option>
+        </select>
+        <Notice notice={notice} />
+        <button
+          type="button"
+          onClick={handleCreate}
+          disabled={saving}
+          className={primaryBtn}
+        >
+          {saving ? "Inahifadhi..." : "Ongeza Bango"}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-7 w-7 animate-spin text-[#059669]" />
+        </div>
+      ) : ads.length === 0 ? (
+        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
+          Bado hakuna mabango.
+        </p>
+      ) : (
+        ads.map((ad) => (
+          <div
+            key={ad.id}
+            className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row"
+          >
+            <img
+              src={ad.banner_url}
+              alt={ad.business_name}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = BROKEN_IMAGE;
+              }}
+              className="h-20 w-full rounded-xl object-cover sm:w-40"
+            />
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900">
+                  {ad.business_name}
+                </h3>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                  {ad.placement === "top_banner" ? "Juu" : "Kati"}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                    ad.is_active
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-200 text-slate-600"
+                  }`}
+                >
+                  {ad.is_active ? "Linaonekana" : "Limezimwa"}
+                </span>
+              </div>
+              <p className="truncate text-xs text-slate-500">{ad.target_url}</p>
+              <p className="text-xs font-semibold text-slate-900">
+                Mabonyezo: {ad.clicks_count}
+              </p>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => toggleActive(ad)}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700"
+                >
+                  {ad.is_active ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
+                  {ad.is_active ? "Zima" : "Washa"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => remove(ad)}
+                  className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Futa
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
 
 /* =========================== BLOGU =========================== */
 function BlogsTab() {
