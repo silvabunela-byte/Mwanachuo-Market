@@ -17,6 +17,7 @@ import { BROKEN_IMAGE, formatPrice, timeAgo } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import ProductDetailModal from "@/components/ProductDetailModal";
 import PostAdModal from "@/components/PostAdModal";
+import ManageListingsModal from "@/components/ManageListingsModal";
 import { AdBanner, HouseAd } from "@/components/AdBanner";
 import {
   CAMPUS_LOCATIONS,
@@ -209,6 +210,7 @@ export default function HomePage() {
 
   const [selected, setSelected] = useState<Listing | null>(null);
   const [postOpen, setPostOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -263,6 +265,9 @@ export default function HomePage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("post") === "1") {
       setPostOpen(true);
+      window.history.replaceState(null, "", "/");
+    } else if (params.get("manage") === "1") {
+      setManageOpen(true);
       window.history.replaceState(null, "", "/");
     }
   }, []);
@@ -341,6 +346,7 @@ export default function HomePage() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onOpenPostModal={() => setPostOpen(true)}
+        onOpenManageModal={() => setManageOpen(true)}
       />
 
       <main className="mx-auto max-w-6xl space-y-5 px-4 py-4">
@@ -479,6 +485,11 @@ export default function HomePage() {
       <ProductDetailModal
         listing={selected}
         onClose={() => setSelected(null)}
+      />
+      <ManageListingsModal
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
+        onChanged={loadData}
       />
       <PostAdModal
         open={postOpen}
