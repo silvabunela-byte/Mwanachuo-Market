@@ -59,10 +59,10 @@ const PLANS: Plan[] = [
 
 const STEPS = [
   "Chagua kifurushi kinachokufaa hapa chini.",
-  "Bonyeza kitufe cha WhatsApp ili kuwasiliana na Admin.",
+  "Bonyeza kitufe cha WhatsApp ili kuwasiliana na Afisa Masoko wa Mwanachuo Market..",
   "Tuma picha ya bango (au maelezo ya tangazo) pamoja na link ya WhatsApp/Instagram ya biashara yako.",
-  "Admin atakupa maelekezo ya malipo (M-Pesa, Tigo Pesa, Airtel Money au Halopesa).",
-  "Malipo yakithibitishwa, tangazo lako linawekwa hewani ndani ya nusu saa tu.",
+  "Afisa Masoko atakupa maelekezo ya malipo (M-Pesa, Mixx by Yas, Airtel Money au Halopesa).",
+  "Malipo yakithibitishwa, tangazo lako linawekwa hewani ndani ya dakika chache tu.",
 ];
 
 export default function TangazaPage() {
@@ -130,7 +130,7 @@ export default function TangazaPage() {
                 </ul>
                 <a
                   href={adminWhatsAppLink(
-                    `Habari Admin, nataka kuchukua kifurushi cha "${plan.name}" (${plan.price} ${plan.period}) kwenye Mwanachuo Market. Naomba maelekezo.`
+                    `Habari Afisa Masoko, nataka kuchukua kifurushi cha "${plan.name}" (${plan.price} ${plan.period}) kwenye Mwanachuo Market. Naomba maelekezo.`
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -167,14 +167,14 @@ export default function TangazaPage() {
           </ol>
           <a
             href={adminWhatsAppLink(
-              "Habari Admin, nataka kuuliza kuhusu matangazo kwenye Mwanachuo Market."
+              "Habari Afisa Masoko, nataka kuuliza kuhusu matangazo kwenye Mwanachuo Market."
             )}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#059669] px-4 py-3.5 text-sm font-bold text-white hover:bg-emerald-700"
           >
             <MessageCircle className="h-5 w-5" />
-            Wasiliana na Admin WhatsApp
+            Wasiliana na Afisa Masoko WhatsApp
           </a>
         </section>
       </main>
