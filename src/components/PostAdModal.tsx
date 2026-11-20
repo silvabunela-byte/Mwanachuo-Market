@@ -183,14 +183,14 @@ function PostAdForm({
         </div>
 
         {done ? (
-          <div className="space-y-4 overflow-y-auto p-5 text-center">
+                 <div className="space-y-4 overflow-y-auto p-5 text-center">
             <CheckCircle2 className="mx-auto h-14 w-14 text-[#059669]" />
             <p className="text-base font-bold text-slate-900">
               Asante! Tangazo lako limepokelewa.
             </p>
             <p className="text-sm text-slate-500">
               Litaonekana sokoni baada ya Afisa Masoko kulipitisha. Kwa kawaida
-              hutokea ndani ya dakika chache tu.
+              hutokea ndani ya saa chache.
             </p>
             {postedSponsored && (
               <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-left">
@@ -200,18 +200,18 @@ function PostAdForm({
                 <p className="mt-1 text-sm text-slate-600">
                   Gharama ni TSh 2,000 kwa wiki. Tuma ujumbe kwa Afisa Masoko kupata
                   maelekezo ya malipo, kisha tangazo lako litawekwa juu mara
-                  tu malipo yakithibitishwa, na wewe kupokea ujumbe wa kupokelewa kwa malipo.
+                  tu malipo yakithibitishwa.
                 </p>
                 <a
                   href={adminWhatsAppLink(
-                    `Habari Admin, nimeweka tangazo "${postedTitle}" kwenye Mwanachuo Market na nataka liwe juu (Sponsored - TSh 2,000/Mwezi). Naomba maelekezo ya malipo.`
+                    `Habari Afisa Masoko, nimeweka tangazo "${postedTitle}" kwenye Mwanachuo Market na nataka liwe juu (Sponsored - TSh 2,000/wiki). Naomba maelekezo ya malipo.`
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#F97316] px-4 py-3 text-sm font-bold text-white hover:bg-orange-600"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Wasiliana na Afisa Masoko WhatsApp
+                  Wasiliana na Afisa Masoko
                 </a>
               </div>
             )}
