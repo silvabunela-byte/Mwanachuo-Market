@@ -189,8 +189,8 @@ function PostAdForm({
               Asante! Tangazo lako limepokelewa.
             </p>
             <p className="text-sm text-slate-500">
-              Litaonekana sokoni baada ya Admin kulipitisha. Kwa kawaida
-              hutokea ndani ya saa chache.
+              Litaonekana sokoni baada ya Afisa Masoko kulipitisha. Kwa kawaida
+              hutokea ndani ya dakika chache tu.
             </p>
             {postedSponsored && (
               <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-left">
@@ -198,20 +198,20 @@ function PostAdForm({
                   Kuweka tangazo lako juu (Sponsored)
                 </p>
                 <p className="mt-1 text-sm text-slate-600">
-                  Gharama ni TSh 2,000 kwa wiki. Tuma ujumbe kwa Admin kupata
+                  Gharama ni TSh 2,000 kwa wiki. Tuma ujumbe kwa Afisa Masoko kupata
                   maelekezo ya malipo, kisha tangazo lako litawekwa juu mara
-                  tu malipo yakithibitishwa.
+                  tu malipo yakithibitishwa, na wewe kupokea ujumbe wa kupokelewa kwa malipo.
                 </p>
                 <a
                   href={adminWhatsAppLink(
-                    `Habari Admin, nimeweka tangazo "${postedTitle}" kwenye Mwanachuo Market na nataka liwe juu (Sponsored - TSh 2,000/wiki). Naomba maelekezo ya malipo.`
+                    `Habari Admin, nimeweka tangazo "${postedTitle}" kwenye Mwanachuo Market na nataka liwe juu (Sponsored - TSh 2,000/Mwezi). Naomba maelekezo ya malipo.`
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#F97316] px-4 py-3 text-sm font-bold text-white hover:bg-orange-600"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Wasiliana na Admin WhatsApp
+                  Wasiliana na Afisa Masoko WhatsApp
                 </a>
               </div>
             )}
@@ -255,11 +255,22 @@ function PostAdForm({
                     className={inputClass}
                     value={condition}
                     onChange={(e) =>
-                      setCondition(e.target.value as "Mpya" | "Imetumika")
+                     setCondition(e.target.value as "Mpya" | "Imetumika" | "Hai" | "Mbichi" | "Kilichopikwa" | "Imekaushwa" | "Imeiva" | "Imesagwa" | "Imekaangwa" | "Fresh" | "Mgando"|)
                     }
                   >
                     <option value="Mpya">Mpya</option>
                     <option value="Imetumika">Imetumika</option>
+                    <option value="Hai">Hai</option>
+                    <option value="Mbichi">Mbichi</option>
+                    <option value="Kilichopikwa">Kilichopikwa</option>
+                    <option value="Imekaushwa">Imekaushwa</option>
+                    <option value="Imeiva">Imeiva</option>
+                    <option value="Imesagwa">Imesagwa</option>
+                    <option value="Imekaangwa">Imekaangwa</option>
+                    <option value="Fresh">Fresh</option>
+                    <option value="Mgando">Mgando</option> 
+
+                    
                   </select>
                 </Field>
               </div>
@@ -376,7 +387,7 @@ function PostAdForm({
                   className="mt-0.5 h-4 w-4 accent-orange-500"
                 />
                 <span className="text-sm font-medium text-slate-900">
-                  Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/wiki)
+                  Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/Mwezi)
                 </span>
               </label>
 
