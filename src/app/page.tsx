@@ -52,7 +52,7 @@ function ListingCard({
   )}`;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+    <article className="group flex w-full min-w-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
       <button
         type="button"
         onClick={onOpen}
