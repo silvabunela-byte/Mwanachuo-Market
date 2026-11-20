@@ -2,33 +2,28 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { MOCK_BLOGS } from "@/lib/mockBlogs";
-import { BROKEN_IMAGE, formatDate, placeholderImage } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import type { BlogPost } from "@/types/database";
 import Navbar from "@/components/Navbar";
+import BlogCover from "@/components/BlogCover";
 
 function BlogCard({ post }: { post: BlogPost }) {
-  const [broken, setBroken] = useState(false);
-  const cover = broken
-    ? BROKEN_IMAGE
-    : post.cover_image || placeholderImage(post.title.slice(0, 22), "#059669");
+  
+
 
   return (
     <Link
       href={`/blog/${post.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
     >
-      <div className="aspect-[16/9] overflow-hidden bg-slate-100">
-        <img
-          src={cover}
-          alt={post.title}
-          loading="lazy"
-          onError={() => setBroken(true)}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-        />
-      </div>
+               <div className="overflow-hidden">
+           <div className="transition duration-300 group-hover:scale-105">
+             <BlogCover title={post.title} src={post.cover_image} />
+           </div>
+         </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-center justify-between text-xs">
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700">
@@ -42,9 +37,15 @@ function BlogCard({ post }: { post: BlogPost }) {
         {post.excerpt && (
           <p className="line-clamp-3 text-sm text-slate-500">{post.excerpt}</p>
         )}
-        <span className="mt-auto pt-2 text-sm font-bold text-[#059669]">
-          Soma zaidi →
-        </span>
+                   <div className="mt-auto flex items-center justify-between pt-2">
+             <span className="text-sm font-bold text-[#059669]">Soma zaidi →</span>
+             {(post.likes_count ?? 0) > 0 && (
+               <span className="flex items-center gap-1 text-xs font-semibold text-slate-500">
+                 <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+                 {post.likes_count}
+               </span>
+             )}
+           </div>
       </div>
     </Link>
   );
