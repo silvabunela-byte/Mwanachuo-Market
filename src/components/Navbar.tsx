@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   Store,
   Phone,
+  Settings,
   TrendingUp,
   X,
 } from "lucide-react";
@@ -26,6 +27,8 @@ interface NavbarProps {
   onSearchChange?: (value: string) => void;
   /** Kama haijawekwa, kitufe kinaelekeza `/?post=1`. */
   onOpenPostModal?: () => void;
+    /** Kama haijawekwa, kiungo cha "Tangazo Langu" kinaelekeza `/?manage=1`. */
+  onOpenManageModal?: () => void;
 }
 
 interface NavLink {
@@ -34,6 +37,8 @@ interface NavLink {
   icon: LucideIcon;
   /** Kiungo cha rangi ya machungwa (mfano: Tangaza Nasi). */
   accent?: boolean;
+    /** Kiungo kinachofungua modal ya "Simamia Tangazo Langu". */
+  manage?: boolean;
 }
 
 /**
@@ -48,6 +53,7 @@ const NAV_LINKS: NavLink[] = [
   { href: "/uwekezaji", label: "Fedha/Uwekezaji", icon: TrendingUp },
   { href: "/kuhusu", label: "Kuhusu Sisi", icon: Info },
   { href: "/mawasiliano", label: "Mawasiliano", icon: Phone },
+  { href: "/?manage=1", label: "Tangazo Langu", icon: Settings, manage: true },
 ];
 
 function SearchBox({
@@ -98,6 +104,7 @@ export default function Navbar({
   searchQuery,
   onSearchChange,
   onOpenPostModal,
+  onOpenManageModal,
 }: NavbarProps) {
   const pathname = usePathname();
   const [hasNew, setHasNew] = useState(false);
@@ -194,16 +201,30 @@ export default function Navbar({
 
         {/* Viungo (laptop) */}
         <nav className="hidden items-center gap-1 xl:flex" aria-label="Menyu kuu">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={desktopLinkClass(isActive(l.href), l.accent)}
-            >
-              {l.label}
-              {l.href === "/habari" && hasNew && <NewDot className="ml-1.5" />}
-            </Link>
-          ))}
+                   {NAV_LINKS.map((l) =>
+            l.manage && onOpenManageModal ? (
+              <button
+                key={l.href}
+                type="button"
+                onClick={onOpenManageModal}
+                className={desktopLinkClass(false, l.accent)}
+              >
+                {l.label}
+              </button>
+            ) : (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={desktopLinkClass(
+                  l.manage ? false : isActive(l.href),
+                  l.accent
+                )}
+              >
+                {l.label}
+                {l.href === "/habari" && hasNew && <NewDot className="ml-1.5" />}
+              </Link>
+            )
+          )}
         </nav>
 
         {/* Kitufe cha kuweka tangazo + hamburger */}
@@ -256,22 +277,45 @@ export default function Navbar({
           className="max-h-[70vh] overflow-y-auto border-t border-slate-100 bg-white px-3 pb-3 pt-2 sm:px-4 xl:hidden"
         >
           <ul className="space-y-1">
-            {NAV_LINKS.map((l) => {
-              const Icon = l.icon;
-              return (
-                <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    onClick={() => setMenuOpen(false)}
-                    className={mobileLinkClass(isActive(l.href), l.accent)}
-                  >
-                    <Icon className="h-5 w-5 shrink-0" />
-                    <span className="min-w-0 flex-1 truncate">{l.label}</span>
-                    {l.href === "/habari" && hasNew && <NewDot />}
-                  </Link>
-                </li>
-              );
-            })}
+            {navLinks.map((l) => {
+  const Icon = l.icon;
+
+  if (l.manage && onOpenManageModal) {
+    return (
+      <li key={l.href}>
+        <button
+          type="button"
+          onClick={() => {
+            setMenuOpen(false);
+            onOpenManageModal();
+          }}
+          className={`w-full ${mobileLinkClass(false, l.accent)}`}
+        >
+          <Icon className="h-5 w-5 shrink-0" />
+          <span className="min-w-0 flex-1 truncate text-left">
+            {l.label}
+          </span>
+        </button>
+      </li>
+    );
+  }
+
+  return (
+    <li key={l.href}>
+      <Link
+        href={l.href}
+        onClick={() => setMenuOpen(false)}
+        className={mobileLinkClass(
+          l.manage ? false : isActive(l.href),
+          l.accent
+        )}
+      >
+        <Icon className="h-5 w-5 shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-left">{l.label}</span>
+      </Link>
+    </li>
+  );
+})}
           </ul>
           <button
             type="button"
