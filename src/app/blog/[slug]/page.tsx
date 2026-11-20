@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { MOCK_BLOGS } from "@/lib/mockBlogs";
 import { openAd, trackAdClick } from "@/lib/ads";
-import { BROKEN_IMAGE, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import type { BlogPost, LocalAd } from "@/types/database";
 import Navbar from "@/components/Navbar";
 import { AdBanner, HouseAd } from "@/components/AdBanner";
+import BlogCover from "@/components/BlogCover";
+import { CommentsSection, LikeShareBar } from "@/components/BlogEngagement";
 
 /** Maudhui: aya zimetenganishwa na mstari mtupu; mstari unaoanza na "## " ni kichwa kidogo. */
 function renderContent(content: string) {
@@ -46,7 +48,6 @@ export default function BlogPostPage() {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [ad, setAd] = useState<LocalAd | null>(null);
   const [loading, setLoading] = useState(true);
-  const [coverBroken, setCoverBroken] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -93,19 +94,11 @@ export default function BlogPostPage() {
     };
   }, [slug]);
 
+  const isMock = post ? post.id.startsWith("mock-") : false;
+
   const handleAdClick = (a: LocalAd) => {
     openAd(a);
     void trackAdClick(a);
-  };
-
-  const shareOnWhatsApp = () => {
-    if (!post) return;
-    const text = `${post.title}\n${window.location.href}`;
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
   };
 
   return (
@@ -140,39 +133,46 @@ export default function BlogPostPage() {
             </Link>
           </div>
         ) : (
-          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {post.cover_image && (
-              <img
-                src={coverBroken ? BROKEN_IMAGE : post.cover_image}
-                alt={post.title}
-                onError={() => setCoverBroken(true)}
-                className="aspect-[16/9] w-full object-cover"
-              />
-            )}
-            <div className="space-y-4 p-5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700">
-                  {post.category || "Maisha ya Chuo"}
-                </span>
-                <span className="text-slate-500">
-                  {formatDate(post.created_at)}
-                </span>
+          <>
+            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="p-3 pb-0">
+                <div className="overflow-hidden rounded-xl">
+                  <BlogCover
+                    title={post.title}
+                    src={post.cover_image}
+                    large
+                  />
+                </div>
               </div>
-              <h1 className="text-2xl font-extrabold leading-snug text-slate-900">
-                {post.title}
-              </h1>
-              <div className="space-y-4">{renderContent(post.content)}</div>
+              <div className="space-y-4 p-5">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700">
+                    {post.category || "Maisha ya Chuo"}
+                  </span>
+                  <span className="text-slate-500">
+                    {formatDate(post.created_at)}
+                  </span>
+                </div>
+                <h1 className="break-words text-2xl font-extrabold leading-snug text-slate-900">
+                  {post.title}
+                </h1>
+                <div className="space-y-4 break-words">
+                  {renderContent(post.content)}
+                </div>
 
-              <button
-                type="button"
-                onClick={shareOnWhatsApp}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#059669] px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700"
-              >
-                <Share2 className="h-4 w-4" />
-                Shirikisha WhatsApp
-              </button>
-            </div>
-          </article>
+                <div className="border-t border-slate-100 pt-4">
+                  <LikeShareBar
+                    postId={post.id}
+                    title={post.title}
+                    initialLikes={post.likes_count ?? 0}
+                    canLike={!isMock}
+                  />
+                </div>
+              </div>
+            </article>
+
+            {!isMock && <CommentsSection postId={post.id} />}
+          </>
         )}
 
         {!loading && (
