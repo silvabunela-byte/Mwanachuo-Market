@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Megaphone } from "lucide-react";
 import type { LocalAd } from "@/types/database";
@@ -16,6 +16,9 @@ export function AdBanner({
   tall?: boolean;
 }) {
   const [broken, setBroken] = useState(false);
+    useEffect(() => {
+    setBroken(false);
+  }, [ad.banner_url]);
   return (
     <button
       type="button"
