@@ -13,6 +13,7 @@ export interface Listing {
   is_sponsored: boolean;
   is_verified: boolean;
   status: string;
+  rejection_reason?: string | null;
 }
 
 export interface LocalAd {
