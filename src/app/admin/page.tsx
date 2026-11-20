@@ -17,9 +17,15 @@ import { supabase } from "@/lib/supabase";
 import { ADMIN_PIN } from "@/lib/config";
 import { uploadImage } from "@/lib/storage";
 import { BROKEN_IMAGE, formatDate, formatPrice, slugify } from "@/lib/utils";
-import type { BlogPost, Listing, LocalAd, NewsItem } from "@/types/database";
+import type {
+  BlogComment,
+  BlogPost,
+  Listing,
+  LocalAd,
+  NewsItem,
+} from "@/types/database";
 
-type Tab = "bidhaa" | "ads" | "blogu" | "habari";
+type Tab = "bidhaa" | "ads" | "blogu" | "maoni" | "habari";
 type ListingFilter = "pending" | "approved" | "all";
 
 const SESSION_KEY = "mm_admin_ok";
@@ -661,6 +667,179 @@ function BlogsTab() {
   );
 }
 
+
+/* =========================== MAONI =========================== */
+interface AdminComment extends BlogComment {
+  post_title: string;
+  post_slug: string | null;
+}
+
+function CommentsTab() {
+  const [items, setItems] = useState<AdminComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ type: "ok" | "err"; text: string } | null>(
+    null
+  );
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("comments")
+        .select("id, created_at, post_id, author_name, content, blogs(title, slug)")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as Array<
+        BlogComment & {
+          blogs:
+            | { title: string; slug: string }
+            | { title: string; slug: string }[]
+            | null;
+        }
+      >;
+      setItems(
+        rows.map((r) => {
+          const b = Array.isArray(r.blogs) ? r.blogs[0] : r.blogs;
+          return {
+            id: r.id,
+            created_at: r.created_at,
+            post_id: r.post_id,
+            author_name: r.author_name,
+            content: r.content,
+            post_title: b?.title ?? "(makala imefutwa)",
+            post_slug: b?.slug ?? null,
+          };
+        })
+      );
+    } catch (err) {
+      console.error(err);
+      setNotice({ type: "err", text: "Imeshindwa kupakia maoni." });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const remove = async (c: AdminComment) => {
+    setBusyId(c.id);
+    setNotice(null);
+    try {
+      const { data, error } = await supabase
+        .from("comments")
+        .delete()
+        .eq("id", c.id)
+        .select("id");
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("Hakuna safu iliyofutwa (angalia policy ya delete).");
+      }
+      setItems((prev) => prev.filter((x) => x.id !== c.id));
+      setNotice({ type: "ok", text: "Maoni yamefutwa." });
+    } catch (err) {
+      console.error(err);
+      setNotice({ type: "err", text: "Imeshindwa kufuta maoni." });
+    } finally {
+      setBusyId(null);
+      setConfirmId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-base font-extrabold text-slate-900">
+          Maoni yote ({items.length})
+        </h2>
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+        >
+          Pakia Upya
+        </button>
+      </div>
+      <Notice notice={notice} />
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-7 w-7 animate-spin text-[#059669]" />
+        </div>
+      ) : items.length === 0 ? (
+        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
+          Bado hakuna maoni.
+        </p>
+      ) : (
+        items.map((c) => (
+          <div
+            key={c.id}
+            className="space-y-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-500">
+              <span className="min-w-0 truncate font-bold text-slate-900">
+                {c.author_name}
+              </span>
+              <span>{formatDate(c.created_at)}</span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Makala:{" "}
+              {c.post_slug ? (
+                <Link
+                  href={`/blog/${c.post_slug}`}
+                  className="font-semibold text-emerald-700"
+                >
+                  {c.post_title}
+                </Link>
+              ) : (
+                <span className="font-semibold">{c.post_title}</span>
+              )}
+            </p>
+            <p className="whitespace-pre-line break-words text-sm text-slate-700">
+              {c.content}
+            </p>
+            {confirmId === c.id ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-red-600">
+                  Una uhakika?
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void remove(c)}
+                  disabled={busyId === c.id}
+                  className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  {busyId === c.id ? "Inafuta..." : "Ndiyo, futa"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmId(null)}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  Hapana
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmId(c.id)}
+                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Futa
+              </button>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
 /* =========================== HABARI =========================== */
 function NewsTab() {
   const [items, setItems] = useState<NewsItem[]>([]);
@@ -1077,6 +1256,7 @@ export default function AdminPage() {
               ["bidhaa", "Bidhaa"],
               ["ads", "Local Ads"],
               ["blogu", "Blogu"],
+              ["maoni", "Maoni"],
               ["habari", "Habari"],
             ] as [Tab, string][]
           ).map(([key, label]) => (
@@ -1099,6 +1279,7 @@ export default function AdminPage() {
         {tab === "bidhaa" && <ListingsTab />}
         {tab === "ads" && <AdsTab />}
         {tab === "blogu" && <BlogsTab />}
+        {tab === "maoni" && <CommentsTab />}
         {tab === "habari" && <NewsTab />}
       </main>
     </div>
