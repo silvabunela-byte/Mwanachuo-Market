@@ -1000,7 +1000,7 @@ export default function AdminPage() {
               <Lock className="h-6 w-6" />
             </span>
             <h1 className="text-xl font-extrabold text-slate-900">
-              Admin - Mwanachuo Market
+              Afisa Masoko wa Mwanachuo Market
             </h1>
             <p className="text-sm text-slate-500">Weka PIN kuendelea.</p>
           </div>
@@ -1054,7 +1054,7 @@ export default function AdminPage() {
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <h1 className="text-lg font-extrabold text-slate-900">
-            Admin <span className="text-[#059669]">Dashboard</span>
+            Afisa Masoko <span className="hidden text-[#059669] sm:inline">Dashboard</span>
           </h1>
           <div className="flex items-center gap-3">
             <Link href="/" className="text-sm font-semibold text-emerald-700">
@@ -1070,7 +1070,7 @@ export default function AdminPage() {
             </button>
           </div>
         </div>
-        <div className="mx-auto flex max-w-4xl gap-2 px-4 pb-3">
+        <div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto px-4 pb-3">
           {(
             [
               ["bidhaa", "Bidhaa"],
@@ -1083,7 +1083,7 @@ export default function AdminPage() {
               key={key}
               type="button"
               onClick={() => setTab(key)}
-              className={`rounded-full border px-4 py-1.5 text-sm font-semibold ${
+              className={shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold ${`
                 tab === key
                   ? "border-emerald-600 bg-[#059669] text-white"
                   : "border-slate-200 bg-white text-slate-700"
