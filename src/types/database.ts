@@ -35,6 +35,15 @@ export interface BlogPost {
   content: string;
   cover_image: string | null;
   category: string | null;
+  likes_count?: number | null;   // <-- MPYA
+}
+
+export interface BlogComment {   // <-- MPYA (interface nzima)
+  id: string;
+  created_at: string;
+  post_id: string;
+  author_name: string;
+  content: string;
 }
 
 export const CATEGORIES = [
