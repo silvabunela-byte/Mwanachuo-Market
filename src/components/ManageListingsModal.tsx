@@ -19,6 +19,11 @@ import {
   type ManageStatus,
 } from "@/lib/listingManage";
 import { formatPrice, normalizePhone } from "@/lib/utils";
+import {
+  currentDecision,
+  decisionMessage,
+  pendingMessage,
+} from "@/lib/listingMessages";
 import { CAMPUS_LOCATIONS, CATEGORIES, type Listing } from "@/types/database";
 
 const MAX_IMAGES = 3;
@@ -444,6 +449,18 @@ function ManageForm({
                       </div>
                     </div>
 
+                    <p className="break-words rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                      {(() => {
+                        const d = currentDecision(l);
+                        return d
+                          ? decisionMessage(d, {
+                              sellerName: l.seller_name,
+                              title: l.title,
+                              reason: l.rejection_reason,
+                            })
+                          : pendingMessage();
+                      })()}
+                    </p>
                     {confirmDeleteId === l.id ? (
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold text-red-600">
