@@ -140,20 +140,25 @@ function TopBanner({
 }) {
   const [index, setIndex] = useState(0);
 
+   // Timer inaanza upya kila index inapobadilika (pia mtumiaji akibonyeza nukta)
   useEffect(() => {
     if (ads.length < 2) return;
-    const timer = setInterval(() => {
+    const timer = setTimeout(() => {
       setIndex((i) => (i + 1) % ads.length);
     }, 5000);
-    return () => clearInterval(timer);
-  }, [ads.length]);
+    return () => clearTimeout(timer);
+  }, [ads.length, index]);
+
+  useEffect(() => {
+    if (index >= ads.length) setIndex(0);
+  }, [ads.length, index]);
 
   if (ads.length === 0) return <HouseAd tall />;
   const current = ads[index % ads.length];
 
   return (
     <div className="space-y-2">
-      <AdBanner ad={current} onClick={onClick} tall />
+      <AdBanner key={current.id} ad={current} onClick={onClick} tall />
       {ads.length > 1 && (
         <div className="flex justify-center gap-1.5">
           {ads.map((a, i) => (
@@ -287,12 +292,18 @@ export default function HomePage() {
     });
   }, [listings, searchQuery, category, campus]);
 
-  const topAds = useMemo(
-    () => ads.filter((a) => a.placement === "top_banner"),
+    const topAds = useMemo(
+    () =>
+      ads.filter(
+        (a) => (a.placement ?? "").trim().toLowerCase() === "top_banner"
+      ),
     [ads]
   );
   const feedAds = useMemo(
-    () => ads.filter((a) => a.placement === "feed_banner"),
+    () =>
+      ads.filter(
+        (a) => (a.placement ?? "").trim().toLowerCase() === "feed_banner"
+      ),
     [ads]
   );
 
