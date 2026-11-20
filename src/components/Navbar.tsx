@@ -13,8 +13,9 @@ import {
   Search,
   ShoppingBag,
   Store,
-  X,
+  Phone,
   TrendingUp,
+  X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { hasNewNews } from "@/lib/news";
@@ -37,15 +38,16 @@ interface NavLink {
 
 /**
  * VIUNGO VYA MENYU: kuongeza ukurasa mpya, ongeza mstari mmoja hapa.
- * Mfano: { href: "/fedha", label: "Fedha/Uwekezaji", icon: Info },
+ * Mfano: { href: "/ukurasa-wako", label: "Jina", icon: Info },
  */
 const NAV_LINKS: NavLink[] = [
   { href: "/", label: "Soko", icon: Store },
   { href: "/blog", label: "Blogu", icon: BookOpen },
   { href: "/habari", label: "Habari", icon: Newspaper },
   { href: "/tangaza", label: "Tangaza Nasi", icon: Megaphone, accent: true },
+  { href: "/uwekezaji", label: "Fedha/Uwekezaji", icon: TrendingUp },
   { href: "/kuhusu", label: "Kuhusu Sisi", icon: Info },
-    { href: "/fedha", label: "Fedha/Uwekezaji", icon: Info },
+  { href: "/mawasiliano", label: "Mawasiliano", icon: Phone },
 ];
 
 function SearchBox({
@@ -164,7 +166,7 @@ export default function Navbar({
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
         {/* Logo */}
         <Link href="/" className="flex min-w-0 items-center gap-2.5">
           <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#059669] text-white">
@@ -180,18 +182,18 @@ export default function Navbar({
 
         {/* Kutafuta (laptop) */}
         {showSearch ? (
-          <div className="hidden max-w-xl flex-1 lg:block">
+          <div className="hidden max-w-xl flex-1 xl:block">
             <SearchBox
               value={searchQuery ?? ""}
               onChange={onSearchChange as (v: string) => void}
             />
           </div>
         ) : (
-          <div className="hidden flex-1 lg:block" />
+          <div className="hidden flex-1 xl:block" />
         )}
 
         {/* Viungo (laptop) */}
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Menyu kuu">
+        <nav className="hidden items-center gap-1 xl:flex" aria-label="Menyu kuu">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
@@ -226,7 +228,7 @@ export default function Navbar({
             aria-label={menuOpen ? "Funga menyu" : "Fungua menyu"}
             aria-expanded={menuOpen}
             aria-controls="menyu-ya-simu"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:bg-slate-100 lg:hidden"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:bg-slate-100 xl:hidden"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             {hasNew && !menuOpen && (
@@ -238,7 +240,7 @@ export default function Navbar({
 
       {/* Kutafuta (simu na tablet) */}
       {showSearch && (
-        <div className="px-3 pb-2 sm:px-4 lg:hidden">
+        <div className="px-3 pb-2 sm:px-4 xl:hidden">
           <SearchBox
             value={searchQuery ?? ""}
             onChange={onSearchChange as (v: string) => void}
@@ -251,7 +253,7 @@ export default function Navbar({
         <nav
           id="menyu-ya-simu"
           aria-label="Menyu ya simu"
-          className="max-h-[70vh] overflow-y-auto border-t border-slate-100 bg-white px-3 pb-3 pt-2 sm:px-4 lg:hidden"
+          className="max-h-[70vh] overflow-y-auto border-t border-slate-100 bg-white px-3 pb-3 pt-2 sm:px-4 xl:hidden"
         >
           <ul className="space-y-1">
             {NAV_LINKS.map((l) => {
