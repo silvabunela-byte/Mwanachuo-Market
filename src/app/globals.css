@@ -49,3 +49,27 @@ body {
     animation: none;
   }
 }
+/* ---------- MUONEKANO WA SIMU ---------- */
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Maneno marefu (links, majina) yasivunje upana wa ukurasa */
+p,
+h1,
+h2,
+h3,
+h4,
+li {
+  overflow-wrap: anywhere;
+}
+
+/* Zuia iPhone/Android kuzoom yenyewe mtu akibonyeza kisanduku cha kuandika */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
