@@ -208,10 +208,10 @@ function ManageForm({
     setError(null);
     const priceNumber = Math.round(Number(price));
     const normalizedPhone = normalizePhone(phone);
+    const cleanCondition = condition.replace(/\s+/g, " ").trim();
+    const cleanCampus = campus.replace(/\s+/g, " ").trim();
 
     if (title.trim().length < 3) return setError("Weka kichwa cha tangazo.");
-        const cleanCondition = condition.replace(/\s+/g, " ").trim();
-    const cleanCampus = campus.replace(/\s+/g, " ").trim();
     if (!cleanCondition)
       return setError("Weka hali ya bidhaa (chagua au andika mwenyewe).");
     if (!cleanCampus)
@@ -238,7 +238,7 @@ function ManageForm({
         description: description.trim(),
         price: priceNumber,
         category,
-                condition: cleanCondition,
+        condition: cleanCondition,
         campus: cleanCampus,
         seller: sellerName.trim(),
         newPhone: normalizedPhone,
