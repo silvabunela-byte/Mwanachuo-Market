@@ -911,12 +911,19 @@ function BlogsTab() {
 }
 
 /* =========================== MAONI =========================== */
-interface AdminComment extends BlogComment {
+interface AdminComment {
+  id: string;
+  created_at: string;
+  author_name: string;
+  content: string;
   post_title: string;
-  post_slug: string | null;
+  link: string | null;
 }
 
+type CommentSource = "blogu" | "habari";
+
 function CommentsTab() {
+  const [source, setSource] = useState<CommentSource>("blogu");
   const [items, setItems] = useState<AdminComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -927,42 +934,82 @@ function CommentsTab() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setNotice(null);
     try {
-      const { data, error } = await supabase
-        .from("comments")
-        .select("id, created_at, post_id, author_name, content, blogs(title, slug)")
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      const rows = (data ?? []) as unknown as Array<
-        BlogComment & {
+      if (source === "blogu") {
+        const { data, error } = await supabase
+          .from("comments")
+          .select("id, created_at, author_name, content, blogs(title, slug)")
+          .order("created_at", { ascending: false })
+          .limit(500);
+        if (error) throw error;
+        const rows = (data ?? []) as unknown as Array<{
+          id: string;
+          created_at: string;
+          author_name: string;
+          content: string;
           blogs:
             | { title: string; slug: string }
             | { title: string; slug: string }[]
             | null;
-        }
-      >;
-      setItems(
-        rows.map((r) => {
-          const b = Array.isArray(r.blogs) ? r.blogs[0] : r.blogs;
-          return {
-            id: r.id,
-            created_at: r.created_at,
-            post_id: r.post_id,
-            author_name: r.author_name,
-            content: r.content,
-            post_title: b?.title ?? "(makala imefutwa)",
-            post_slug: b?.slug ?? null,
-          };
-        })
-      );
+        }>;
+        setItems(
+          rows.map((r) => {
+            const b = Array.isArray(r.blogs) ? r.blogs[0] : r.blogs;
+            return {
+              id: r.id,
+              created_at: r.created_at,
+              author_name: r.author_name,
+              content: r.content,
+              post_title: b?.title ?? "(makala imefutwa)",
+              link: b?.slug ? `/blog/${b.slug}` : null,
+            };
+          })
+        );
+      } else {
+        const { data, error } = await supabase
+          .from("news_comments")
+          .select("id, created_at, news_id, author_name, content, news(title)")
+          .order("created_at", { ascending: false })
+          .limit(500);
+        if (error) throw error;
+        const rows = (data ?? []) as unknown as Array<{
+          id: string;
+          created_at: string;
+          news_id: string | number;
+          author_name: string;
+          content: string;
+          news: { title: string } | { title: string }[] | null;
+        }>;
+        setItems(
+          rows.map((r) => {
+            const n = Array.isArray(r.news) ? r.news[0] : r.news;
+            return {
+              id: r.id,
+              created_at: r.created_at,
+              author_name: r.author_name,
+              content: r.content,
+              post_title: n?.title ?? "(habari imefutwa)",
+              link: n ? `/habari#news-${r.news_id}` : null,
+            };
+          })
+        );
+      }
     } catch (err) {
       console.error(err);
-      setNotice({ type: "err", text: "Imeshindwa kupakia maoni." });
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "";
+      setItems([]);
+      setNotice({
+        type: "err",
+        text: `Imeshindwa kupakia maoni.${msg ? ` (${msg})` : ""}`,
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [source]);
 
   useEffect(() => {
     void load();
@@ -972,20 +1019,28 @@ function CommentsTab() {
     setBusyId(c.id);
     setNotice(null);
     try {
+      const table = source === "blogu" ? "comments" : "news_comments";
       const { data, error } = await supabase
-        .from("comments")
+        .from(table)
         .delete()
         .eq("id", c.id)
         .select("id");
       if (error) throw error;
       if (!data || data.length === 0) {
-        throw new Error("Hakuna safu iliyofutwa (angalia policy ya delete).");
+        throw new Error("Hakuna safu iliyofutwa (angalia policy ya delete)");
       }
       setItems((prev) => prev.filter((x) => x.id !== c.id));
       setNotice({ type: "ok", text: "Maoni yamefutwa." });
     } catch (err) {
       console.error(err);
-      setNotice({ type: "err", text: "Imeshindwa kufuta maoni." });
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "";
+      setNotice({
+        type: "err",
+        text: `Imeshindwa kufuta maoni.${msg ? ` (${msg})` : ""}`,
+      });
     } finally {
       setBusyId(null);
       setConfirmId(null);
@@ -994,6 +1049,31 @@ function CommentsTab() {
 
   return (
     <div className="space-y-3">
+      <div className="flex gap-2">
+        {(
+          [
+            ["blogu", "Maoni ya Blogu"],
+            ["habari", "Maoni ya Habari"],
+          ] as [CommentSource, string][]
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => {
+              setSource(key);
+              setConfirmId(null);
+            }}
+            className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+              source === key
+                ? "border-emerald-600 bg-[#059669] text-white"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-base font-extrabold text-slate-900">
           Maoni yote ({items.length})
@@ -1029,10 +1109,10 @@ function CommentsTab() {
               <span>{formatDate(c.created_at)}</span>
             </div>
             <p className="text-xs text-slate-500">
-              Makala:{" "}
-              {c.post_slug ? (
+              {source === "blogu" ? "Makala" : "Habari"}:{" "}
+              {c.link ? (
                 <Link
-                  href={`/blog/${c.post_slug}`}
+                  href={c.link}
                   className="font-semibold text-emerald-700"
                 >
                   {c.post_title}
