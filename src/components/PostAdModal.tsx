@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   CheckCircle2,
   ImagePlus,
@@ -438,7 +439,25 @@ function PostAdForm({
                   Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/wiki)
                 </span>
               </label>
-
+              <p className="text-xs leading-relaxed text-slate-500">
+                Kwa kutuma tangazo, unakubali{" "}
+                <Link
+                  href="/sheria-na-masharti"
+                  target="_blank"
+                  className="font-semibold text-emerald-700 underline"
+                >
+                  Sheria na Masharti
+                </Link>{" "}
+                na{" "}
+                <Link
+                  href="/faragha"
+                  target="_blank"
+                  className="font-semibold text-emerald-700 underline"
+                >
+                  Sera ya Faragha
+                </Link>
+                .
+              </p>
               {error && (
                 <p
                   role="alert"
