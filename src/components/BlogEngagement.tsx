@@ -9,8 +9,10 @@ import {
   MessageCircle,
   Send,
   Share2,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useIsAdmin } from "@/lib/useIsAdmin";
 import { timeAgo } from "@/lib/utils";
 import type { BlogComment } from "@/types/database";
 
@@ -220,6 +222,8 @@ export function CommentsSection({ postId }: { postId: string }) {
   const [cooldown, setCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const isAdmin = useIsAdmin();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const load = useCallback(async () => {
     try {
@@ -319,6 +323,31 @@ export function CommentsSection({ postId }: { postId: string }) {
     }
   };
 
+    const removeComment = async (c: BlogComment) => {
+    if (!window.confirm("Futa maoni haya?")) return;
+    setDeletingId(c.id);
+    try {
+      const { data, error: err } = await supabase
+        .from("comments")
+        .delete()
+        .eq("id", c.id)
+        .select("id");
+      if (err) throw err;
+      if (!data || data.length === 0) {
+        throw new Error("Hakuna safu iliyofutwa (angalia policy ya delete)");
+      }
+      setComments((prev) => prev.filter((x) => x.id !== c.id));
+    } catch (err) {
+      console.error(err);
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "";
+      setError(`Imeshindwa kufuta maoni.${msg ? ` (${msg})` : ""}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
   const inputClass =
     "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20";
 
@@ -407,6 +436,17 @@ export function CommentsSection({ postId }: { postId: string }) {
               <p className="mt-1 whitespace-pre-line break-words text-sm text-slate-700">
                 {c.content}
               </p>
+                            {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => void removeComment(c)}
+                  disabled={deletingId === c.id}
+                  className="mt-2 flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-60"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {deletingId === c.id ? "Inafuta..." : "Futa (Admin)"}
+                </button>
+              )}
             </li>
           ))}
         </ul>
