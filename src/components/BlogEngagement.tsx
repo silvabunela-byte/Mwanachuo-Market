@@ -243,7 +243,7 @@ export function CommentsSection({ postId }: { postId: string }) {
       setLoading(false);
     }
   }, [postId]);
-  }, [postId]);
+ 
 
   useEffect(() => {
     setLoading(true);
