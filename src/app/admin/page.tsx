@@ -629,6 +629,7 @@ function BlogsTab() {
     null
   );
 
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
@@ -653,12 +654,36 @@ function BlogsTab() {
     load();
   }, [load]);
 
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle("");
+    setSlug("");
+    setSlugEdited(false);
+    setExcerpt("");
+    setCategory("Maisha ya Chuo");
+    setCoverImage("");
+    setContent("");
+  };
+
+  const startEdit = (post: BlogPost) => {
+    setNotice(null);
+    setEditingId(post.id);
+    setTitle(post.title);
+    setSlug(post.slug);
+    setSlugEdited(true); // slug isibadilike yenyewe wakati wa kuhariri
+    setExcerpt(post.excerpt ?? "");
+    setCategory(post.category ?? "Maisha ya Chuo");
+    setCoverImage(post.cover_image ?? "");
+    setContent(post.content);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleTitle = (value: string) => {
     setTitle(value);
     if (!slugEdited) setSlug(slugify(value));
   };
 
-  const handlePublish = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setNotice(null);
     const finalSlug = slugify(slug || title);
@@ -669,17 +694,54 @@ function BlogsTab() {
     if (content.trim().length < 20)
       return setNotice({ type: "err", text: "Andika maudhui ya makala." });
 
+    const payload = {
+      title: title.trim(),
+      slug: finalSlug,
+      excerpt: excerpt.trim() || null,
+      content: content.trim(),
+      cover_image: coverImage.trim() || null,
+      category: category.trim() || "Maisha ya Chuo",
+    };
+
     setSaving(true);
+
+    if (editingId) {
+      const { data, error } = await supabase
+        .from("blogs")
+        .update(payload)
+        .eq("id", editingId)
+        .select()
+        .maybeSingle();
+      setSaving(false);
+
+      if (error) {
+        setNotice({
+          type: "err",
+          text:
+            error.code === "23505"
+              ? "Slug hii tayari ipo. Badilisha slug iwe ya kipekee."
+              : error.message,
+        });
+        return;
+      }
+      if (!data) {
+        setNotice({
+          type: "err",
+          text: "Hakuna kilichohifadhiwa. Endesha SQL ya sera ya update (hatua A1) kisha ujaribu tena.",
+        });
+        return;
+      }
+      setPosts((prev) =>
+        prev.map((p) => (p.id === editingId ? (data as BlogPost) : p))
+      );
+      resetForm();
+      setNotice({ type: "ok", text: "Mabadiliko yamehifadhiwa." });
+      return;
+    }
+
     const { data, error } = await supabase
       .from("blogs")
-      .insert({
-        title: title.trim(),
-        slug: finalSlug,
-        excerpt: excerpt.trim() || null,
-        content: content.trim(),
-        cover_image: coverImage.trim() || null,
-        category: category.trim() || "Maisha ya Chuo",
-      })
+      .insert(payload)
       .select()
       .single();
     setSaving(false);
@@ -695,12 +757,7 @@ function BlogsTab() {
       return;
     }
     setPosts((prev) => [data as BlogPost, ...prev]);
-    setTitle("");
-    setSlug("");
-    setSlugEdited(false);
-    setExcerpt("");
-    setCoverImage("");
-    setContent("");
+    resetForm();
     setNotice({ type: "ok", text: "Makala imechapishwa." });
   };
 
@@ -709,14 +766,32 @@ function BlogsTab() {
     const { error } = await supabase.from("blogs").delete().eq("id", post.id);
     if (error) return setNotice({ type: "err", text: error.message });
     setPosts((prev) => prev.filter((p) => p.id !== post.id));
+    if (editingId === post.id) resetForm();
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 className="text-base font-extrabold text-slate-900">
-          Andika Makala Mpya
-        </h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-extrabold text-slate-900">
+            {editingId ? "Hariri Makala" : "Andika Makala Mpya"}
+          </h3>
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+            >
+              Ghairi
+            </button>
+          )}
+        </div>
+        {editingId && (
+          <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+            Unahariri makala iliyopo. Ukibadilisha slug, link za zamani za
+            makala hii zitaacha kufanya kazi.
+          </p>
+        )}
         <input
           className={inputClass}
           placeholder="Kichwa cha makala"
@@ -740,7 +815,7 @@ function BlogsTab() {
             onChange={(e) => setCategory(e.target.value)}
           />
         </div>
-              <NewsImageField
+        <NewsImageField
           label="Picha ya jalada la makala (hiari)"
           folder="blogs"
           value={coverImage}
@@ -763,11 +838,17 @@ function BlogsTab() {
         <Notice notice={notice} />
         <button
           type="button"
-          onClick={handlePublish}
+          onClick={handleSave}
           disabled={saving}
           className={primaryBtn}
         >
-          {saving ? "Inachapisha..." : "Chapisha Makala"}
+          {saving
+            ? editingId
+              ? "Inahifadhi..."
+              : "Inachapisha..."
+            : editingId
+            ? "Hifadhi Mabadiliko"
+            : "Chapisha Makala"}
         </button>
       </div>
 
@@ -784,7 +865,11 @@ function BlogsTab() {
         posts.map((p) => (
           <div
             key={p.id}
-            className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+            className={`flex items-center justify-between gap-3 rounded-2xl border bg-white p-3 shadow-sm ${
+              editingId === p.id
+                ? "border-emerald-500 ring-2 ring-emerald-500/20"
+                : "border-slate-200"
+            }`}
           >
             <div className="min-w-0">
               <h3 className="truncate text-sm font-bold text-slate-900">
@@ -800,21 +885,30 @@ function BlogsTab() {
                 </Link>
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => remove(p)}
-              className="flex shrink-0 items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Futa
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => startEdit(p)}
+                className="flex items-center gap-1 rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Hariri
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(p)}
+                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Futa
+              </button>
+            </div>
           </div>
         ))
       )}
     </div>
   );
 }
-
 
 /* =========================== MAONI =========================== */
 interface AdminComment extends BlogComment {
