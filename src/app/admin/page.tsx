@@ -740,11 +740,11 @@ function BlogsTab() {
             onChange={(e) => setCategory(e.target.value)}
           />
         </div>
-        <input
-          className={inputClass}
-          placeholder="Link ya picha ya jalada (hiari)"
+              <NewsImageField
+          label="Picha ya jalada la makala (hiari)"
+          folder="blogs"
           value={coverImage}
-          onChange={(e) => setCoverImage(e.target.value)}
+          onChange={setCoverImage}
         />
         <textarea
           className={`${inputClass} min-h-[70px]`}
@@ -992,9 +992,13 @@ function CommentsTab() {
 function NewsImageField({
   value,
   onChange,
+  label = "Picha ya habari (hiari)",
+  folder = "news",
 }: {
   value: string;
   onChange: (url: string) => void;
+  label?: string;
+  folder?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -1017,7 +1021,7 @@ function NewsImageField({
     }
     setUploading(true);
     try {
-      const url = await uploadImage(file, "news");
+          const url = await uploadImage(file, folder);
       onChange(url);
     } catch (error) {
       setErr(
@@ -1030,9 +1034,7 @@ function NewsImageField({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-semibold text-slate-900">
-        Picha ya habari (hiari)
-      </p>
+           <p className="text-sm font-semibold text-slate-900">{label}</p>
 
       {value.trim() && !broken && (
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
