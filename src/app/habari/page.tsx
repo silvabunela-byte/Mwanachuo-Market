@@ -6,6 +6,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { formatDate, timeAgo } from "@/lib/utils";
 import type { NewsItem } from "@/types/database";
 import Navbar from "@/components/Navbar";
+import NewsEngagement from "@/components/NewsEngagement";
 
 type Filter = "zote" | "mpya";
 
@@ -53,14 +54,23 @@ function NewsImage({ src, title }: { src: string | null; title: string }) {
   );
 }
 
-function NewsCard({ item, index }: { item: NewsItem; index: number }) {
-  const [expanded, setExpanded] = useState(false);
+function NewsCard({
+  item,
+  index,
+  commentCount,
+}: {
+  item: NewsItem;
+  index: number;
+  commentCount: number;
+}) {
+const [expanded, setExpanded] = useState(false);
   const isLong = item.body.length > LONG_TEXT;
 
   return (
-    <article
+      <article
+      id={`news-${item.id}`}
       style={{ animationDelay: `${Math.min(index, 6) * 100}ms` }}
-      className={`animate-fade-up relative overflow-hidden rounded-2xl border bg-white p-5 pl-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg ${
+      className={`animate-fade-up scroll-mt-20 relative overflow-hidden rounded-2xl border bg-white p-5 pl-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg ${
         item.is_new
           ? "border-amber-300 ring-2 ring-amber-100"
           : "border-slate-200"
@@ -102,6 +112,12 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
           {expanded ? "Punguza ↑" : "Soma zaidi ↓"}
         </button>
       )}
+              <NewsEngagement
+        newsId={String(item.id)}
+        title={item.title}
+        initialLikes={item.likes_count ?? 0}
+        initialComments={commentCount}
+      />
     </article>
   );
 }
@@ -128,8 +144,9 @@ export default function HabariPage() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("zote");
+    const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
-  useEffect(() => {
+    useEffect(() => {
     let cancelled = false;
     (async () => {
       let data: NewsItem[] = [];
@@ -148,6 +165,39 @@ export default function HabariPage() {
       if (cancelled) return;
       setItems(data);
       setLoading(false);
+
+      if (data.length > 0) {
+        try {
+          const res = await supabase
+            .from("news_comments")
+            .select("news_id")
+            .limit(5000);
+          if (!res.error && !cancelled) {
+            const counts: Record<string, number> = {};
+            for (const r of (res.data ?? []) as { news_id: string | number }[]) {
+              const k = String(r.news_id);
+              counts[k] = (counts[k] ?? 0) + 1;
+            }
+            setCommentCounts(counts);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Link iliyoshirikiwa (#news-...) ielekeze moja kwa moja kwenye habari husika
+  useEffect(() => {
+    if (loading) return;
+    const hash = window.location.hash;
+    if (!hash.startsWith("#news-")) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [loading]);
     })();
     return () => {
       cancelled = true;
@@ -222,7 +272,12 @@ export default function HabariPage() {
         ) : (
           <div key={filter} className="space-y-4">
             {visible.map((item, i) => (
-              <NewsCard key={item.id} item={item} index={i} />
+                            <NewsCard
+                key={item.id}
+                item={item}
+                index={i}
+                commentCount={commentCounts[String(item.id)] ?? 0}
+              />
             ))}
           </div>
         )}
