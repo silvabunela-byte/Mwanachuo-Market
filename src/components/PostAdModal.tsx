@@ -15,6 +15,7 @@ import { uploadImage } from "@/lib/storage";
 import { normalizePhone } from "@/lib/utils";
 import { welcomeMessage } from "@/lib/listingMessages";
 import { CAMPUS_LOCATIONS, CATEGORIES } from "@/types/database";
+import SelectOrType, { CONDITION_OPTIONS } from "@/components/SelectOrType";
 
 interface PostAdModalProps {
   open: boolean;
@@ -56,7 +57,7 @@ function PostAdForm({
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>(postCategories[0]);
-  const [condition, setCondition] = useState<"Mpya" | "Imetumika">("Imetumika");
+  const [condition, setCondition] = useState<string>("Imetumika");
   const [price, setPrice] = useState("");
   const [campus, setCampus] = useState<string>(postLocations[0]);
   const [sellerName, setSellerName] = useState("");
@@ -111,6 +112,12 @@ function PostAdForm({
     const normalizedPhone = normalizePhone(phone);
 
     if (title.trim().length < 3) return setError("Weka kichwa cha tangazo.");
+        const cleanCondition = condition.replace(/\s+/g, " ").trim();
+    const cleanCampus = campus.replace(/\s+/g, " ").trim();
+    if (!cleanCondition)
+      return setError("Weka hali ya bidhaa (chagua au andika mwenyewe).");
+    if (!cleanCampus)
+      return setError("Weka eneo lako (chagua au andika mwenyewe).");
     if (!Number.isFinite(priceNumber) || priceNumber <= 0)
       return setError("Weka bei sahihi kwa Shilingi ya Tanzania.");
     if (sellerName.trim().length < 2) return setError("Weka jina lako.");
@@ -135,8 +142,8 @@ function PostAdForm({
         p_description: description.trim(),
         p_price: priceNumber,
         p_category: category,
-        p_condition: condition,
-        p_campus: campus,
+                p_condition: cleanCondition,
+        p_campus: cleanCampus,
         p_seller: sellerName.trim(),
         p_phone: normalizedPhone,
         p_images: urls,
@@ -272,17 +279,14 @@ function PostAdForm({
                     ))}
                   </select>
                 </Field>
-                <Field label="Hali">
-                  <select
-                    className={inputClass}
+                               <Field label="Hali">
+                  <SelectOrType
                     value={condition}
-                    onChange={(e) =>
-                      setCondition(e.target.value as "Mpya" | "Imetumika")
-                    }
-                  >
-                    <option value="Mpya">Mpya</option>
-                    <option value="Imetumika">Imetumika</option>
-                  </select>
+                    onChange={setCondition}
+                    options={CONDITION_OPTIONS}
+                    inputClass={inputClass}
+                    placeholder="Mfano: Fresh, Iliyopikwa leo"
+                  />
                 </Field>
               </div>
 
@@ -298,18 +302,14 @@ function PostAdForm({
                     placeholder="45000"
                   />
                 </Field>
-                <Field label="Eneo / Chuo">
-                  <select
-                    className={inputClass}
+                               <Field label="Eneo / Chuo">
+                  <SelectOrType
                     value={campus}
-                    onChange={(e) => setCampus(e.target.value)}
-                  >
-                    {postLocations.map((l) => (
-                      <option key={l} value={l}>
-                        {l}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCampus}
+                    options={postLocations}
+                    inputClass={inputClass}
+                    placeholder="Mfano: Kihonda, Kingolwira"
+                  />
                 </Field>
               </div>
 
