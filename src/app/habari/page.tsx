@@ -198,11 +198,7 @@ export default function HabariPage() {
     const el = document.getElementById(hash.slice(1));
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [loading]);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  
 
   const newCount = items.filter((n) => n.is_new).length;
   const visible = filter === "mpya" ? items.filter((n) => n.is_new) : items;
