@@ -75,4 +75,5 @@ export interface NewsItem {
   title: string;
   body: string;
   is_new: boolean;
+  image_url: string | null;
 }
