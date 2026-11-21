@@ -76,4 +76,5 @@ export interface NewsItem {
   body: string;
   is_new: boolean;
   image_url: string | null;
+  likes_count?: number | null;   // <-- ONGEZA HII
 }
