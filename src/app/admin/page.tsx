@@ -989,6 +989,123 @@ function CommentsTab() {
 }
 
 /* =========================== HABARI =========================== */
+function NewsImageField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    setBroken(false);
+  }, [value]);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setErr(null);
+    if (!file.type.startsWith("image/")) {
+      return setErr("Chagua faili la picha tu.");
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return setErr("Picha ni kubwa kuliko MB 5. Chagua ndogo zaidi.");
+    }
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, "news");
+      onChange(url);
+    } catch (error) {
+      setErr(
+        error instanceof Error ? error.message : "Imeshindwa kupakia picha."
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-semibold text-slate-900">
+        Picha ya habari (hiari)
+      </p>
+
+      {value.trim() && !broken && (
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+          <img
+            src={value.trim()}
+            alt="Hakikisho la picha"
+            onError={() => setBroken(true)}
+            className="aspect-[16/9] w-full object-cover"
+          />
+        </div>
+      )}
+      {value.trim() && broken && (
+        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+          Picha hii haionekani. Angalia link au pakia picha nyingine.
+        </p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <label
+          className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-600 px-4 py-2.5 text-sm font-bold text-emerald-700 hover:bg-emerald-50 ${
+            uploading ? "pointer-events-none opacity-60" : ""
+          }`}
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Inapakia...
+            </>
+          ) : value.trim() ? (
+            "Badilisha picha"
+          ) : (
+            "Pakia picha kutoka kwenye simu/kompyuta"
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFile}
+            disabled={uploading}
+            className="sr-only"
+          />
+        </label>
+        {value.trim() && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50"
+          >
+            Ondoa picha
+          </button>
+        )}
+      </div>
+
+      <input
+        className={inputClass}
+        placeholder="Au weka link ya picha (https://...)"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <p className="text-xs text-slate-500">
+        Ukubwa wa juu: MB 5. Picha ya mlalo (16:9) inaonekana vizuri zaidi.
+      </p>
+      {err && (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+        >
+          {err}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function NewsTab() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -998,12 +1115,14 @@ function NewsTab() {
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [markNew, setMarkNew] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [editImage, setEditImage] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async () => {
@@ -1032,15 +1151,27 @@ function NewsTab() {
     setSaving(true);
     const { data, error } = await supabase
       .from("news")
-      .insert({ title: title.trim(), body: body.trim(), is_new: markNew })
+      .insert({
+        title: title.trim(),
+        body: body.trim(),
+        is_new: markNew,
+        image_url: imageUrl.trim() || null,
+      })
       .select()
       .single();
     setSaving(false);
 
-    if (error) return setNotice({ type: "err", text: error.message });
+    if (error)
+      return setNotice({
+        type: "err",
+        text: error.message.includes("image_url")
+          ? "Safu ya picha haipo. Endesha SQL ya 'alter table news add column image_url' kwanza."
+          : error.message,
+      });
     setItems((prev) => [data as NewsItem, ...prev]);
     setTitle("");
     setBody("");
+    setImageUrl("");
     setMarkNew(true);
     setNotice({ type: "ok", text: "Habari imechapishwa." });
   };
@@ -1081,12 +1212,14 @@ function NewsTab() {
     setEditingId(item.id);
     setEditTitle(item.title);
     setEditBody(item.body);
+    setEditImage(item.image_url ?? "");
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditTitle("");
     setEditBody("");
+    setEditImage("");
   };
 
   const saveEdit = async (item: NewsItem) => {
@@ -1096,10 +1229,15 @@ function NewsTab() {
     if (editBody.trim().length < 5)
       return setNotice({ type: "err", text: "Andika maelezo ya habari." });
 
+    const nextImage = editImage.trim() || null;
     setSavingEdit(true);
     const { error } = await supabase
       .from("news")
-      .update({ title: editTitle.trim(), body: editBody.trim() })
+      .update({
+        title: editTitle.trim(),
+        body: editBody.trim(),
+        image_url: nextImage,
+      })
       .eq("id", item.id);
     setSavingEdit(false);
 
@@ -1107,7 +1245,12 @@ function NewsTab() {
     setItems((prev) =>
       prev.map((n) =>
         n.id === item.id
-          ? { ...n, title: editTitle.trim(), body: editBody.trim() }
+          ? {
+              ...n,
+              title: editTitle.trim(),
+              body: editBody.trim(),
+              image_url: nextImage,
+            }
           : n
       )
     );
@@ -1135,6 +1278,7 @@ function NewsTab() {
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
+        <NewsImageField value={imageUrl} onChange={setImageUrl} />
         <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
           <input
             type="checkbox"
@@ -1201,6 +1345,7 @@ function NewsTab() {
                 value={editBody}
                 onChange={(e) => setEditBody(e.target.value)}
               />
+              <NewsImageField value={editImage} onChange={setEditImage} />
               <Notice notice={notice} />
               <div className="flex gap-2">
                 <button
@@ -1222,58 +1367,69 @@ function NewsTab() {
               </div>
             </div>
           ) : (
-          <div
-            key={n.id}
-            className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
-          >
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-2 truncate text-sm font-bold text-slate-900">
-                {n.title}
-                {n.is_new && (
-                  <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase text-amber-700">
-                    Mpya
-                  </span>
+            <div
+              key={n.id}
+              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                {n.image_url && (
+                  <img
+                    src={n.image_url}
+                    alt=""
+                    loading="lazy"
+                    className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 object-cover"
+                  />
                 )}
-              </h3>
-              <p className="text-xs text-slate-500">{formatDate(n.created_at)}</p>
+                <div className="min-w-0">
+                  <h3 className="flex items-center gap-2 truncate text-sm font-bold text-slate-900">
+                    <span className="truncate">{n.title}</span>
+                    {n.is_new && (
+                      <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase text-amber-700">
+                        Mpya
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {formatDate(n.created_at)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => startEdit(n)}
+                  className="flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Hariri
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewFlag(n, !n.is_new)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${
+                    n.is_new
+                      ? "border-amber-300 text-amber-700 hover:bg-amber-50"
+                      : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  }`}
+                >
+                  {n.is_new ? "Ondoa MPYA" : "Weka MPYA"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => remove(n)}
+                  className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Futa
+                </button>
+              </div>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => startEdit(n)}
-                className="flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Hariri
-              </button>
-              <button
-                type="button"
-                onClick={() => setNewFlag(n, !n.is_new)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${
-                  n.is_new
-                    ? "border-amber-300 text-amber-700 hover:bg-amber-50"
-                    : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                }`}
-              >
-                {n.is_new ? "Ondoa MPYA" : "Weka MPYA"}
-              </button>
-              <button
-                type="button"
-                onClick={() => remove(n)}
-                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Futa
-              </button>
-            </div>
-          </div>
           )
         )
       )}
     </div>
   );
 }
-
 /* =========================== ADMIN =========================== */
 function authErrorMessage(error: AuthError): string {
   const msg = (error.message || "").toLowerCase();
