@@ -30,6 +30,29 @@ function NewBadge() {
   );
 }
 
+function NewsImage({ src, title }: { src: string | null; title: string }) {
+  const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    setBroken(false);
+  }, [src]);
+
+  // Hakuna picha (au imeshindwa kupakia): usionyeshe nafasi tupu
+  if (!src || broken) return null;
+
+  return (
+    <div className="mt-3 aspect-[16/9] w-full overflow-hidden rounded-xl bg-slate-100">
+      <img
+        src={src}
+        alt={title}
+        loading="lazy"
+        onError={() => setBroken(true)}
+        className="h-full w-full object-cover"
+      />
+    </div>
+  );
+}
+
 function NewsCard({ item, index }: { item: NewsItem; index: number }) {
   const [expanded, setExpanded] = useState(false);
   const isLong = item.body.length > LONG_TEXT;
@@ -60,8 +83,10 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
         {item.title}
       </h2>
 
+      <NewsImage src={item.image_url} title={item.title} />
+
       <p
-        className={`mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600 ${
+        className={`mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600 ${
           expanded ? "" : "line-clamp-3"
         }`}
       >
