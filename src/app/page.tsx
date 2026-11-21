@@ -206,8 +206,7 @@ export default function HomePage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState<Category>("Zote");
-  const [campus, setCampus] = useState<CampusLocation>("Maeneo Yote");
-
+  const [campus, setCampus] = useState<string>("Maeneo Yote");
   const [selected, setSelected] = useState<Listing | null>(null);
   const [postOpen, setPostOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
@@ -285,7 +284,12 @@ export default function HomePage() {
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return listings.filter((l) => {
-      if (category !== "Zote" && l.category !== category) return false;
+           if (
+        campus !== "Maeneo Yote" &&
+        (l.campus_location ?? "").trim().toLowerCase() !==
+          campus.trim().toLowerCase()
+      )
+        return false;
       if (campus !== "Maeneo Yote" && l.campus_location !== campus)
         return false;
       if (q) {
@@ -296,6 +300,19 @@ export default function HomePage() {
       return true;
     });
   }, [listings, searchQuery, category, campus]);
+    // Orodha ya maeneo: ya kawaida + yale yaliyoandikwa na wauzaji
+  const campusOptions = useMemo(() => {
+    const options: string[] = [...CAMPUS_LOCATIONS];
+    const seen = new Set(options.map((o) => o.toLowerCase()));
+    for (const l of listings) {
+      const loc = (l.campus_location ?? "").replace(/\s+/g, " ").trim();
+      if (loc && !seen.has(loc.toLowerCase())) {
+        seen.add(loc.toLowerCase());
+        options.push(loc);
+      }
+    }
+    return options;
+  }, [listings]);
 
     const topAds = useMemo(
     () =>
@@ -389,12 +406,12 @@ export default function HomePage() {
             <MapPin className="h-4 w-4 text-slate-500" />
             <select
               value={campus}
-              onChange={(e) => setCampus(e.target.value as CampusLocation)}
+              onChange={(e) => setCampus(e.target.value)}
               aria-label="Chagua eneo la chuo"
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
             >
-              {CAMPUS_LOCATIONS.map((loc) => (
-                <option key={loc} value={loc}>
+              {campusOptions.map((loc) => (
+              <option key={loc} value={loc}>
                   {loc}
                 </option>
               ))}
