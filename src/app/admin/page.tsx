@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import type { AuthError, Session } from "@supabase/supabase-js";
 import {
   Ban,
   BadgeCheck,
@@ -15,8 +16,7 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { ADMIN_PIN } from "@/lib/config";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { uploadImage } from "@/lib/storage";
 import {
   currentDecision,
@@ -1275,53 +1275,118 @@ function NewsTab() {
 }
 
 /* =========================== ADMIN =========================== */
+function authErrorMessage(error: AuthError): string {
+  const msg = (error.message || "").toLowerCase();
+  const code = (error as { code?: string }).code ?? "";
+  if (
+    error.status === 429 ||
+    code === "over_request_rate_limit" ||
+    msg.includes("rate limit")
+  ) {
+    return "Umejaribu mara nyingi sana. Subiri dakika chache kisha ujaribu tena.";
+  }
+  if (code === "email_not_confirmed" || msg.includes("not confirmed")) {
+    return "Barua pepe haijathibitishwa. Thibitisha akaunti kwenye Supabase.";
+  }
+  if (
+    code === "invalid_credentials" ||
+    msg.includes("invalid login") ||
+    msg.includes("invalid credentials")
+  ) {
+    return "Barua pepe au nenosiri si sahihi.";
+  }
+  if (msg.includes("fetch") || msg.includes("network")) {
+    return "Hakuna mtandao au Supabase haipatikani. Jaribu tena.";
+  }
+  return "Imeshindwa kuingia. Jaribu tena.";
+}
+
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const [checked, setChecked] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("bidhaa");
 
+  // Kagua session iliyopo + sikiliza kuingia/kutoka (pamoja na session kuisha)
   useEffect(() => {
-    try {
-      if (window.sessionStorage.getItem(SESSION_KEY) === "1") setAuthed(true);
-    } catch {
-      /* sessionStorage haipatikani */
-    }
-    setChecked(true);
+    let active = true;
+
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (active) setSession(data.session);
+      } catch {
+        if (active) setSession(null);
+      } finally {
+        if (active) setChecked(true);
+      }
+    })();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        if (!active) return;
+        setSession(nextSession);
+        setChecked(true);
+      }
+    );
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  const login = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (pin === ADMIN_PIN) {
-      setAuthed(true);
-      setPinError(false);
-      try {
-        window.sessionStorage.setItem(SESSION_KEY, "1");
-      } catch {
-        /* haina madhara */
-      }
-    } else {
-      setPinError(true);
+    if (signingIn) return;
+    setLoginError(null);
+
+    if (!isSupabaseConfigured) {
+      return setLoginError(
+        "Supabase haijaunganishwa. Angalia NEXT_PUBLIC_SUPABASE_URL na NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      );
     }
+    if (!email.trim() || !password) {
+      return setLoginError("Weka barua pepe na nenosiri.");
+    }
+
+    setSigningIn(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setSigningIn(false);
+
+    if (error) return setLoginError(authErrorMessage(error));
+    setPassword("");
   };
 
-  const logout = () => {
-    setAuthed(false);
-    setPin("");
-    try {
-      window.sessionStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* haina madhara */
-    }
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setPassword("");
+    setShowPassword(false);
   };
 
-  if (!checked) return null;
+  if (!checked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-[#059669]" />
+      </div>
+    );
+  }
 
-  if (!authed) {
+  if (!session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-        <div className="w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form
+          onSubmit={handleLogin}
+          className="w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        >
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#059669] text-white">
               <Lock className="h-6 w-6" />
@@ -1329,41 +1394,82 @@ export default function AdminPage() {
             <h1 className="text-xl font-extrabold text-slate-900">
               Afisa Masoko wa Mwanachuo Market
             </h1>
-            <p className="text-sm text-slate-500">Weka PIN kuendelea.</p>
+            <p className="text-sm text-slate-500">
+              Ingia kwa barua pepe na nenosiri lako.
+            </p>
           </div>
-          <input
-            type="password"
-            inputMode="numeric"
-            autoFocus
-            value={pin}
-            onChange={(e) => {
-              setPin(e.target.value);
-              setPinError(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (pin === ADMIN_PIN) {
-                  setAuthed(true);
-                  try {
-                    window.sessionStorage.setItem(SESSION_KEY, "1");
-                  } catch {
-                    /* haina madhara */
-                  }
-                } else {
-                  setPinError(true);
-                }
-              }
-            }}
-            placeholder="PIN"
-            className={inputClass}
-          />
-          {pinError && (
-            <p className="text-sm font-medium text-red-600">
-              PIN si sahihi. Jaribu tena.
+
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-900">
+              Barua pepe
+            </span>
+            <input
+              type="email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setLoginError(null);
+              }}
+              placeholder="jina@mfano.com"
+              className={inputClass}
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-900">
+              Nenosiri
+            </span>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError(null);
+                }}
+                placeholder="Nenosiri"
+                className={`${inputClass} pr-11`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Ficha nenosiri" : "Onyesha nenosiri"}
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </label>
+
+          {loginError && (
+            <p
+              role="alert"
+              className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+            >
+              {loginError}
             </p>
           )}
-          <button type="button" onClick={login} className={`${primaryBtn} w-full`}>
-            Ingia
+
+          <button
+            type="submit"
+            disabled={signingIn}
+            className={`${primaryBtn} flex w-full items-center justify-center gap-2`}
+          >
+            {signingIn ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Inaingia...
+              </>
+            ) : (
+              "Ingia"
+            )}
           </button>
           <Link
             href="/"
@@ -1371,20 +1477,25 @@ export default function AdminPage() {
           >
             ← Rudi Sokoni
           </Link>
-        </div>
+        </form>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-            <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <h1 className="text-lg font-extrabold text-slate-900">
             Afisa Masoko
             <span className="hidden text-[#059669] sm:inline"> Dashboard</span>
           </h1>
           <div className="flex items-center gap-3">
+            {session.user.email && (
+              <span className="hidden max-w-[180px] truncate text-xs text-slate-500 md:block">
+                {session.user.email}
+              </span>
+            )}
             <Link href="/" className="text-sm font-semibold text-emerald-700">
               Soko
             </Link>
