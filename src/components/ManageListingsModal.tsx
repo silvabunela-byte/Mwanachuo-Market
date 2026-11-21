@@ -543,8 +543,9 @@ function ManageForm({
                         {c}
                       </option>
                     ))}
-                  </select>
-                              <Field label="Hali">
+                                   </select>
+                </Field>
+                <Field label="Hali">
                   <SelectOrType
                     value={condition}
                     onChange={setCondition}
@@ -565,7 +566,7 @@ function ManageForm({
                     onChange={(e) => setPrice(e.target.value)}
                   />
                 </Field>
-                              <Field label="Eneo / Chuo">
+                <Field label="Eneo / Chuo">           
                   <SelectOrType
                     value={campus}
                     onChange={setCampus}
