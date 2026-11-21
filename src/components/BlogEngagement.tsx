@@ -219,8 +219,9 @@ export function CommentsSection({ postId }: { postId: string }) {
   const [sending, setSending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+    const load = useCallback(async () => {
     try {
       const { data, error: err } = await supabase
         .from("comments")
@@ -230,11 +231,18 @@ export function CommentsSection({ postId }: { postId: string }) {
         .limit(100);
       if (err) throw err;
       setComments((data ?? []) as BlogComment[]);
+      setLoadError(null);
     } catch (err) {
       console.error(err);
+      setLoadError(
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Hitilafu isiyojulikana"
+      );
     } finally {
       setLoading(false);
     }
+  }, [postId]);
   }, [postId]);
 
   useEffect(() => {
@@ -302,7 +310,9 @@ export function CommentsSection({ postId }: { postId: string }) {
       } else if (msg.includes("FLOOD")) {
         setError("Maoni mengi yanatumwa sasa hivi. Jaribu tena baadaye kidogo.");
       } else {
-        setError("Imeshindwa kutuma maoni. Jaribu tena.");
+                setError(
+          `Imeshindwa kutuma maoni. Jaribu tena.${msg ? ` (${msg})` : ""}`
+        );
       }
     } finally {
       setSending(false);
@@ -365,7 +375,14 @@ export function CommentsSection({ postId }: { postId: string }) {
           </p>
         )}
       </div>
-
+      {loadError && (
+        <p
+          role="alert"
+          className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800"
+        >
+          Maoni hayakupakia: {loadError}
+        </p>
+      )}
       {loading ? (
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-[#059669]" />
