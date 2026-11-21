@@ -477,7 +477,7 @@ export default function HomePage() {
         )}
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-slate-500">
+          <footer className="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-slate-500">
         © {new Date().getFullYear()} Mwanachuo Market — Soko la wanachuo, kwa
         wanachuo.
       </footer>
