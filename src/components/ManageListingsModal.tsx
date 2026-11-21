@@ -25,6 +25,7 @@ import {
   pendingMessage,
 } from "@/lib/listingMessages";
 import { CAMPUS_LOCATIONS, CATEGORIES, type Listing } from "@/types/database";
+import SelectOrType, { CONDITION_OPTIONS } from "@/components/SelectOrType";
 
 const MAX_IMAGES = 3;
 
@@ -209,6 +210,12 @@ function ManageForm({
     const normalizedPhone = normalizePhone(phone);
 
     if (title.trim().length < 3) return setError("Weka kichwa cha tangazo.");
+        const cleanCondition = condition.replace(/\s+/g, " ").trim();
+    const cleanCampus = campus.replace(/\s+/g, " ").trim();
+    if (!cleanCondition)
+      return setError("Weka hali ya bidhaa (chagua au andika mwenyewe).");
+    if (!cleanCampus)
+      return setError("Weka eneo lako (chagua au andika mwenyewe).");
     if (!Number.isFinite(priceNumber) || priceNumber <= 0)
       return setError("Weka bei sahihi kwa Shilingi ya Tanzania.");
     if (sellerName.trim().length < 2) return setError("Weka jina lako.");
@@ -231,8 +238,8 @@ function ManageForm({
         description: description.trim(),
         price: priceNumber,
         category,
-        condition,
-        campus,
+                condition: cleanCondition,
+        campus: cleanCampus,
         seller: sellerName.trim(),
         newPhone: normalizedPhone,
         images: [...keptUrls, ...uploaded],
@@ -537,16 +544,14 @@ function ManageForm({
                       </option>
                     ))}
                   </select>
-                </Field>
-                <Field label="Hali">
-                  <select
-                    className={inputClass}
+                              <Field label="Hali">
+                  <SelectOrType
                     value={condition}
-                    onChange={(e) => setCondition(e.target.value)}
-                  >
-                    <option value="Mpya">Mpya</option>
-                    <option value="Imetumika">Imetumika</option>
-                  </select>
+                    onChange={setCondition}
+                    options={CONDITION_OPTIONS}
+                    inputClass={inputClass}
+                    placeholder="Mfano: Fresh, Iliyopikwa leo"
+                  />
                 </Field>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -560,18 +565,14 @@ function ManageForm({
                     onChange={(e) => setPrice(e.target.value)}
                   />
                 </Field>
-                <Field label="Eneo / Chuo">
-                  <select
-                    className={inputClass}
+                              <Field label="Eneo / Chuo">
+                  <SelectOrType
                     value={campus}
-                    onChange={(e) => setCampus(e.target.value)}
-                  >
-                    {editLocations.map((l) => (
-                      <option key={l} value={l}>
-                        {l}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCampus}
+                    options={editLocations}
+                    inputClass={inputClass}
+                    placeholder="Mfano: Kihonda, Kingolwira"
+                  />
                 </Field>
               </div>
               <div className="grid grid-cols-2 gap-3">
