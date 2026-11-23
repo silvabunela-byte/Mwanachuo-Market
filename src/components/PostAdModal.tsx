@@ -227,13 +227,13 @@ function PostAdForm({
                   Kuweka tangazo lako juu (Sponsored)
                 </p>
                 <p className="mt-1 text-sm text-slate-600">
-                  Gharama ni TSh 2,000 kwa wiki. Tuma ujumbe kwa Afisa Masoko kupata
+                  Gharama ni TSh 2,000 kwa mwezi. Tuma ujumbe kwa Afisa Masoko kupata
                   maelekezo ya malipo, kisha tangazo lako litawekwa juu mara
                   tu malipo yakithibitishwa.
                 </p>
                 <a
                   href={adminWhatsAppLink(
-                    `Habari Afisa Masoko, nimeweka tangazo "${postedTitle}" kwenye Mwanachuo Market na nataka liwe juu (Sponsored - TSh 2,000/wiki). Naomba maelekezo ya malipo.`
+                    `Habari Afisa Masoko, nimeweka tangazo "${postedTitle}" kwenye Mwanachuo Market na nataka liwe juu (Sponsored - TSh 2,000/mwezi). Naomba maelekezo ya malipo.`
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -436,7 +436,7 @@ function PostAdForm({
                   className="mt-0.5 h-4 w-4 accent-orange-500"
                 />
                 <span className="text-sm font-medium text-slate-900">
-                  Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/wiki)
+                  Nataka tangazo langu liwe juu (Sponsored - TSh 2,000/mwezi)
                 </span>
               </label>
               <p className="text-xs leading-relaxed text-slate-500">
